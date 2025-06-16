@@ -1,0 +1,317 @@
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 1;
+  transition: all 0.3s ease-in-out;
+}
+
+.popup-overlay.closing {
+  opacity: 0;
+}
+
+.popup-content {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 32px;
+  border-radius: 24px;
+  text-align: center;
+  width: calc(100% - 48px);
+  max-width: 360px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.success-animation {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 24px;
+  position: relative;
+}
+
+.checkmark-circle {
+  width: 100px;
+  height: 100px;
+  position: relative;
+  background-color: #7152f3;
+  border-radius: 50%;
+  animation: checkmark-circle 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: center;
+}
+
+.checkmark-check {
+  position: absolute;
+  top: 50%;
+  left: 28px;
+  height: 40px;
+  width: 20px;
+  border-right: 4px solid white;
+  border-bottom: 4px solid white;
+  transform: rotate(45deg) translate(-50%, -50%);
+  opacity: 0;
+  animation: checkmark-check 0.4s ease-in-out 0.4s forwards;
+}
+
+.popup-title {
+  font-size: 28px;
+  color: #1a1a1a;
+  margin-bottom: 16px;
+  font-weight: 700;
+  opacity: 0;
+  animation: fadeInUp 0.6s ease forwards 0.4s;
+}
+
+.popup-message {
+  color: #666;
+  margin-bottom: 32px;
+  font-size: 16px;
+  line-height: 1.6;
+  opacity: 0;
+  animation: fadeInUp 0.6s ease forwards 0.6s;
+}
+
+.back-to-login-button {
+  width: 100%;
+  padding: 16px;
+  background-color: #7152f3;
+  color: white;
+  border: none;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0;
+  animation: fadeInUp 0.6s ease forwards 0.8s;
+  box-shadow: 0 4px 12px rgba(113, 82, 243, 0.2);
+}
+
+.back-to-login-button:hover {
+  background-color: #6346d7;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(113, 82, 243, 0.3);
+}
+
+.back-to-login-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(113, 82, 243, 0.2);
+}
+
+.back-to-login {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #7152f3;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.back-to-login:hover {
+  background-color: #6346d7;
+}
+
+/* Animations */
+@keyframes popIn {
+  from {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes checkmark-circle {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes checkmark-check {
+  0% {
+    opacity: 0;
+    transform: rotate(45deg) translate(-50%, -50%) scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(45deg) translate(-50%, -50%) scale(1);
+  }
+}
+
+/* Responsive Styles */
+@media screen and (max-width: 768px) {
+  .popup-content {
+    padding: 24px;
+    max-width: 320px;
+  }
+
+  .success-animation {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 20px;
+  }
+
+  .checkmark-circle {
+    width: 80px;
+    height: 80px;
+  }
+
+  .checkmark-check {
+    left: 24px;
+    height: 32px;
+    width: 16px;
+    border-right: 3px solid white;
+    border-bottom: 3px solid white;
+  }
+
+  .popup-title {
+    font-size: 24px;
+    margin-bottom: 12px;
+  }
+
+  .popup-message {
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+
+  .back-to-login-button {
+    padding: 14px;
+    font-size: 15px;
+    border-radius: 14px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .popup-content {
+    padding: 20px;
+    width: calc(100% - 32px);
+    max-width: 300px;
+  }
+
+  .success-animation {
+    width: 70px;
+    height: 70px;
+    margin-bottom: 16px;
+  }
+
+  .checkmark-circle {
+    width: 70px;
+    height: 70px;
+  }
+
+  .checkmark-check {
+    left: 20px;
+    height: 28px;
+    width: 14px;
+  }
+
+  .popup-title {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+
+  .popup-message {
+    font-size: 13px;
+    margin-bottom: 20px;
+    line-height: 1.4;
+  }
+
+  .back-to-login-button {
+    padding: 12px;
+    font-size: 14px;
+    border-radius: 12px;
+  }
+}
+
+/* iPad Specific Adjustments */
+@media screen and (min-width: 768px) and (max-width: 1024px) {
+  .popup-content {
+    max-width: 400px;
+    padding: 40px;
+  }
+
+  .success-animation {
+    width: 120px;
+    height: 120px;
+    margin-bottom: 30px;
+  }
+
+  .checkmark-circle {
+    width: 120px;
+    height: 120px;
+  }
+
+  .checkmark-check {
+    left: 34px;
+    height: 48px;
+    width: 24px;
+  }
+
+  .popup-title {
+    font-size: 32px;
+    margin-bottom: 20px;
+  }
+
+  .popup-message {
+    font-size: 18px;
+    margin-bottom: 36px;
+  }
+
+  .back-to-login-button {
+    padding: 18px;
+    font-size: 18px;
+    border-radius: 18px;
+  }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .back-to-login-button {
+    cursor: default;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .back-to-login-button:active {
+    transform: scale(0.98);
+  }
+}
+
+/* Fix for iOS Safari */
+@supports (-webkit-touch-callout: none) {
+  .popup-overlay {
+    backdrop-filter: blur(10px);
+  }
+}

@@ -1,0 +1,448 @@
+/* Account Management Page Styles */
+.account.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+  background: #4e54c8;
+  background: -webkit-linear-gradient(to left, #8f94fb, #4e54c8);
+  background: linear-gradient(to left, #8f94fb, #4e54c8);
+  overflow-x: hidden;
+  width: 100%;
+}
+
+.account.dashboard-main {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+.account.dashboard-content {
+  position: relative;
+  z-index: 1;
+}
+
+.account-container {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(99, 102, 241, 0.12);
+  padding: 1rem;
+  margin-top: 3rem;
+  width: 100%;
+  position: relative;
+  z-index: 2;
+
+  animation: slideUp 0.5s ease-out;
+}
+
+.account-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.account-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.account-search-bar {
+  position: relative;
+  width: 300px;
+  transition: all 0.3s ease;
+}
+
+.account-search-bar:focus-within {
+  transform: translateY(-2px);
+}
+
+.account-search-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  transition: color 0.3s ease;
+}
+
+.account-search-bar:focus-within .account-search-icon {
+  color: #6366f1;
+}
+
+.account-search-bar input {
+  width: 100%;
+  padding: 0.8rem 1rem 0.8rem 2.8rem;
+  border: 2px solid rgba(99, 102, 241, 0.2);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background: #fff;
+  transition: all 0.3s ease;
+}
+
+.account-search-bar input:hover {
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+.account-search-bar input:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(113, 82, 243, 0.1);
+}
+
+/* Table Styles */
+.account-table-container {
+  overflow-x: auto;
+  border-radius: 8px;
+  animation: fadeIn 0.7s ease;
+}
+
+.account-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #fff;
+}
+
+.account-table thead {
+  background: #6366f1;
+}
+
+.account-table th {
+  padding: 1rem;
+  color: white;
+  font-weight: 500;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.account-table tr {
+  transition: all 0.3s ease;
+  animation: fadeInRow 0.5s ease;
+}
+
+.account-table tbody tr:hover {
+  background: rgba(113, 82, 243, 0.05);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(113, 82, 243, 0.08);
+}
+
+.account-table td {
+  padding: 1rem;
+  border-bottom: 1px solid rgba(113, 82, 243, 0.1);
+  color: #4b5563;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+
+/* User Cell Styles */
+.account-user-cell {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.account-user-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(113, 82, 243, 0.2);
+  transition: all 0.3s ease;
+}
+
+.account-user-cell:hover .account-user-image {
+  border-color: #7152f3;
+  transform: scale(1.1);
+}
+
+.account-user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.account-user-name {
+  font-weight: 500;
+  color: #374151;
+}
+
+.account-user-nickname {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+/* Status Badge Styles */
+.account-status-badge {
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.account-status-badge.active {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.account-status-badge.inactive {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* Action Buttons */
+.account-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.account-edit-btn,
+.account-delete-btn {
+  padding: 0.5rem;
+  border: none;
+  background: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.account-edit-btn {
+  color: #6366f1;
+}
+
+.account-delete-btn {
+  color: #6366f1;
+}
+
+.account-edit-btn:hover {
+  background: rgba(99, 102, 241, 0.1);
+  transform: translateY(-2px);
+}
+
+.account-delete-btn:hover {
+  background: rgba(99, 102, 241, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Delete Popup Styles */
+.delete-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.delete-popup {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  animation: popIn 0.4s ease;
+}
+
+.delete-popup-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 1.5rem;
+  color: #ef4444;
+  animation: shake 0.5s ease;
+}
+
+.delete-popup h3 {
+  color: #1f2937;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.delete-popup p {
+  color: #6b7280;
+  margin-bottom: 1.5rem;
+}
+
+.delete-popup-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.cancel-btn,
+.delete-btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cancel-btn {
+  background: #f3f4f6;
+  color: #4b5563;
+  border: none;
+}
+
+.delete-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+}
+
+.cancel-btn:hover {
+  background: #e5e7eb;
+  transform: translateY(-2px);
+}
+
+.delete-btn:hover {
+  background: #dc2626;
+  transform: translateY(-2px);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInRow {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  70% {
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  25% {
+    transform: rotate(-10deg);
+  }
+  75% {
+    transform: rotate(10deg);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .account-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .account-search-bar {
+    width: 100%;
+  }
+
+  .account-table-container {
+    margin-top: 1rem;
+  }
+
+  .account-user-cell {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .account-actions {
+    flex-direction: row;
+    justify-content: flex-start;
+  }
+}
+
+/* Dark Mode Support */
+[data-theme='dark'] .account-container {
+  background: rgba(44, 44, 58, 0.95);
+}
+
+[data-theme='dark'] .account-table {
+  background: #363645;
+}
+
+[data-theme='dark'] .account-table td {
+  color: #e5e7eb;
+  border-bottom-color: rgba(113, 82, 243, 0.2);
+}
+
+[data-theme='dark'] .account-user-name {
+  color: #f3f4f6;
+}
+
+[data-theme='dark'] .account-search-bar input {
+  background: #363645;
+  color: #f3f4f6;
+  border-color: rgba(113, 82, 243, 0.3);
+}
+
+[data-theme='dark'] .account-search-bar input:focus {
+  border-color: #7152f3;
+}
+
+[data-theme='dark'] .account-table tbody tr:hover {
+  background: rgba(113, 82, 243, 0.15);
+}
+
+[data-theme='dark'] .delete-popup {
+  background: #2c2c3a;
+}
+
+[data-theme='dark'] .delete-popup h3 {
+  color: #f3f4f6;
+}
+
+[data-theme='dark'] .delete-popup p {
+  color: #d1d5db;
+}
+
+[data-theme='dark'] .cancel-btn {
+  background: #374151;
+  color: #e5e7eb;
+}

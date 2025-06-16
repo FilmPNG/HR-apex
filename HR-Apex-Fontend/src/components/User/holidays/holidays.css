@@ -1,0 +1,602 @@
+.holidays-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  animation: fadeIn 0.5s ease-out forwards;
+  background: linear-gradient(135deg, #fbfbfb, #f0f0f0);
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.holidays-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  background: #ffffff;
+  padding: 1.5rem;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.year-selector {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.year-selector h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #27283c;
+  margin: 0;
+  transition: all 0.3s ease;
+}
+
+.year-selector h2:hover {
+  transform: scale(1.1);
+  color: #6366f1;
+}
+
+.year-nav {
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 1.5rem;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.year-nav:hover {
+  color: #7152f3;
+  background-color: rgba(99, 102, 241, 0.1);
+  transform: scale(1.1);
+}
+
+.year-nav:active {
+  transform: scale(0.95);
+}
+
+.holiday-summary {
+  display: flex;
+  gap: 2rem;
+}
+
+.summary-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f8fafc;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  animation: fadeInDown 0.5s ease-out forwards, glow 2s ease-in-out infinite;
+  position: relative;
+}
+
+.summary-label {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.summary-value {
+  font-weight: 600;
+  color: #7152f3;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+}
+
+.summary-item:hover .summary-value {
+  transform: scale(1.2);
+  color: #6366f1;
+}
+
+.holidays-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.month-card {
+  background: #ffffff;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fadeInScale 0.5s ease-out forwards;
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+.month-card:hover {
+  transform: translateY(-8px) rotate(1deg);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+}
+
+.month-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+}
+
+.month-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.month-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.month-total {
+  font-size: 0.9em;
+  color: #666;
+  background-color: #f0f0f0;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.month-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.month-content {
+  padding: 1rem;
+}
+
+.holiday-item {
+  padding: 1rem;
+  border-radius: 4px;
+  background: #ffffff;
+  margin-bottom: 1rem;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+  animation: slideIn 0.5s ease-out forwards;
+  opacity: 0;
+  transform: translateX(-20px);
+  position: relative;
+}
+
+.holiday-item.clickable {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.holiday-item.clickable:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.holiday-item:hover {
+  background-color: #f8fafc;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.holiday-item:last-child {
+  margin-bottom: 0;
+}
+
+.holiday-counter {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.1);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  color: #666;
+  animation: floatAnimation 2s ease-in-out infinite;
+}
+
+.holiday-type {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  animation: slideInRight 0.5s ease-out;
+}
+
+.holiday-type:hover {
+  transform: scale(1.05);
+  filter: brightness(1.1);
+}
+
+.holiday-type.public-holiday {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.holiday-type.religious-holiday {
+  background: #e0e7ff;
+  color: #4f46e5;
+}
+
+.holiday-type.cultural-holiday {
+  background: #fff7ed;
+  color: #ea580c;
+}
+
+.holiday-type.special-day {
+  background: #fdf2f8;
+  color: #db2777;
+  border: 1px dashed #f9a8d4;
+}
+
+.holiday-type.special-day:hover {
+  background: #fbcfe8;
+  transform: scale(1.05);
+}
+
+.holiday-item h4 {
+  margin: 0 0 0.5rem 0;
+  color: #27283c;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.holiday-date {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #64748b;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.holiday-duration {
+  font-size: 0.85rem;
+  color: #7152f3;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  animation: bounce 0.5s ease-out;
+}
+
+.holiday-details {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  transition: all 0.3s ease;
+}
+
+.holiday-item:hover .holiday-details {
+  transform: scale(1.02);
+  color: #4b5563;
+}
+
+/* ลบ pseudo-element :after ทั้งหมดออก */
+
+.no-holidays {
+  color: #64748b;
+  text-align: center;
+  padding: 2rem;
+  font-style: italic;
+  background: #f8fafc;
+  border-radius: 4px;
+  animation: pulse 2s infinite;
+  transition: all 0.3s ease;
+}
+
+.add-holiday-btn {
+  padding: 0.25rem 0.75rem;
+  background: #6366f1;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+}
+
+.add-holiday-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.holiday-popup-overlay {
+  position: static; /* Change from fixed to static */
+  background: none;
+  display: block;
+  margin-top: 1rem;
+}
+
+.holiday-popup {
+  position: static;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 10px;
+  width: 100%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  margin-top: 0.5rem;
+}
+
+/* Update animation for smooth appearance */
+.holiday-popup {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes floatAnimation {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes glow {
+  0%,
+  100% {
+    box-shadow: 0 0 5px rgba(99, 102, 241, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+  }
+}
+
+/* Mobile Responsive Design */
+@media screen and (max-width: 768px) {
+  .holidays-container {
+    padding: 0.5rem;
+  }
+
+  .holidays-header {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .year-selector {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .year-selector h2 {
+    font-size: 1.8rem;
+  }
+
+  .year-nav {
+    width: 40px;
+    height: 40px;
+    font-size: 1.8rem;
+  }
+
+  .holiday-summary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .summary-item {
+    width: 100%;
+    justify-content: center;
+    padding: 0.75rem;
+  }
+
+  .holidays-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .month-card {
+    margin: 0;
+    border-radius: 12px;
+  }
+
+  .month-header {
+    padding: 1rem;
+  }
+
+  .month-header h3 {
+    font-size: 1.2rem;
+  }
+
+  .month-header-right {
+    gap: 8px;
+  }
+
+  .add-holiday-btn {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+  }
+
+  .holiday-item {
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .holiday-item h4 {
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .holiday-type {
+    padding: 0.35rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .holiday-date {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .holiday-details {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .holiday-counter {
+    padding: 4px 12px;
+    font-size: 0.9rem;
+    border-radius: 16px;
+  }
+
+  .no-holidays {
+    padding: 1.5rem;
+    font-size: 1rem;
+  }
+
+  /* Touch-friendly improvements */
+  .holiday-item.clickable {
+    position: relative;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .holiday-item.clickable:active {
+    transform: scale(0.98);
+    background-color: #f1f5f9;
+  }
+
+  .month-total {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.95rem;
+  }
+
+  /* Improved touch targets */
+  .add-holiday-btn {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .year-nav {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* Additional optimizations for very small screens */
+@media screen and (max-width: 380px) {
+  .month-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .month-header-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .year-selector h2 {
+    font-size: 1.5rem;
+  }
+
+  .holiday-item h4 {
+    font-size: 1rem;
+  }
+
+  .holiday-date,
+  .holiday-details {
+    font-size: 0.95rem;
+  }
+}

@@ -1,0 +1,493 @@
+.side-menu {
+  position: fixed;
+  top: 0.0rem;
+  left: 0rem;
+  width: 200px;
+  height: calc(300vh - 0rem);
+  background-color: rgba(255, 255, 255, 0.98);
+  z-index: 100;
+  transition: all 0.3s ease;
+  padding: 1rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+}
+
+/* ปรับปรุง styles สำหรับ sidemenu เมื่อมี popup */
+.side-menu.has-popup {
+  opacity: 0.3;
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px); /* For Safari support */
+  transition: all 0.3s ease;
+}
+
+.side-menu.minimized {
+  width: 70px; /* ปรับลดลงจาก 80px */
+  padding: 0.8rem 0.4rem;
+}
+
+.logo-container {
+  position: relative;
+  margin-bottom: 1.5rem; /* ปรับลดลงจาก 2rem */
+  display: flex;
+  justify-content: center;
+  padding: 0.4rem;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  color: #7152F3;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0.2rem;
+  border-radius: 0.2rem;
+  transition: all 0.2s ease;
+}
+
+.logo:hover {
+  background-color: #F3F2FF;
+}
+
+.logo:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(113, 82, 243, 0.2);
+}
+
+.logo-icon {
+  background-color: #7152F3;
+  color: white;
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+}
+
+.minimize-btn {
+  display: none;
+}
+
+.menu-items {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem; /* ปรับลดลงจาก 1rem */
+  margin-top: 0;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem; /* ปรับลดลงจาก 1rem */
+  padding: 0.6rem 0.8rem; /* ปรับลดลงจาก 0.8rem 1rem */
+  border-radius: 8px;
+  color: #64748b;
+  background: transparent;
+  transition: all 0.3s ease;
+  position: relative;
+  font-size: 0.9rem; /* ปรับลดลงจาก 0.95rem */
+}
+
+.menu-item:hover {
+  background-color: rgba(99, 102, 241, 0.1);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.dark .menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.menu-item.active {
+  background: #6366f1;
+  color: white;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+}
+
+.menu-item.active::before {
+  content: '';
+  position: absolute;
+  left: -0.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2px;
+  height: 12px;
+  background-color: #7152F3;
+  border-radius: 0 2px 2px 0;
+}
+
+.menu-item:hover {
+  background: rgba(99, 102, 241, 0.08);
+  color: #6366f1;
+}
+
+.menu-icon {
+  font-size: 1.1rem; /* ปรับลดลงจาก 1.2rem */
+  width: 1.1rem;
+}
+
+.menu-text {
+  font-size: 0.9rem; /* ปรับลดลงจาก 0.95rem */
+  font-weight: 500;
+}
+
+.side-menu.minimized .menu-item {
+  padding: 0.4rem;
+  justify-content: center;
+}
+
+.side-menu.minimized .logo {
+  justify-content: center;
+  padding: 0.5rem 0;
+  position: relative;
+}
+
+.side-menu.minimized .logo-icon {
+  margin: 0;
+}
+
+.side-menu.minimized .menu-icon {
+  margin: 0;
+}
+
+.side-menu.minimized .menu-item {
+  position: relative;
+}
+
+.side-menu.minimized .menu-item:hover::after {
+  content: attr(title);
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: #333;
+  color: white;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  margin-left: 10px;
+  z-index: 1000;
+}
+
+.side-menu.minimized .logo:hover::after {
+  content: "Close";
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: #333;
+  color: white;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  margin-left: 10px;
+  z-index: 1000;
+}
+
+/* --- Custom Switch for Theme Toggle (from Uiverse.io, class renamed to avoid collision) --- */
+.theme-switch {
+  font-size: 17px;
+  position: relative;
+  display: inline-block;
+  width: 64px;
+  height: 34px;
+  display: none !important; /* ปรับแสดงปุ่มสลับธีม*/
+}
+.theme-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.theme-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #73C0FC;
+  transition: .4s;
+  border-radius: 30px;
+}
+.theme-slider:before {
+  position: absolute;
+  content: "";
+  height: 30px;
+  width: 30px;
+  border-radius: 20px;
+  left: 2px;
+  bottom: 2px;
+  z-index: 2;
+  background-color: #e8e8e8;
+  transition: .4s;
+}
+.theme-sun svg {
+  position: absolute;
+  top: 6px;
+  left: 36px;
+  z-index: 1;
+  width: 24px;
+  height: 24px;
+}
+.theme-moon svg {
+  fill: #73C0FC;
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  z-index: 1;
+  width: 24px;
+  height: 24px;
+}
+.theme-switch:hover .theme-sun svg {
+  animation: rotate 15s linear infinite;
+}
+@keyframes rotate {
+  0% { transform: rotate(0); }
+  100% { transform: rotate(360deg); }
+}
+.theme-switch:hover .theme-moon svg {
+  animation: tilt 5s linear infinite;
+}
+@keyframes tilt {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(-10deg); }
+  75% { transform: rotate(10deg); }
+  100% { transform: rotate(0deg); }
+}
+.theme-input:checked + .theme-slider {
+  background-color: #183153;
+}
+.theme-input:focus + .theme-slider {
+  box-shadow: 0 0 1px #183153;
+}
+.theme-input:checked + .theme-slider:before {
+  transform: translateX(30px);
+}
+
+/* Mobile Menu Styles */
+@media screen and (max-width: 768px) {
+  .side-menu {
+    position: fixed;
+    left: -70px; /* เปลี่ยนให้เท่ากับ minimized */
+    width: 70px; /* เปลี่ยนให้เท่ากับ minimized */
+    height: 100%;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+    touch-action: pan-y pinch-zoom;
+    box-shadow: none;
+    z-index: 1001;
+    padding: 0.8rem 0.4rem; /* ปรับให้เท่ากับ minimized */
+    background-color: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    border-right: 1px solid rgba(229, 231, 235, 0.5);
+  }
+
+  .side-menu.mobile-open {
+    left: 0;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.08);
+  }
+
+  /* ปรับ logo container */
+  .logo-container {
+    padding: 0.4rem 0;
+    margin-bottom: 1rem;
+  }
+
+  /* ซ่อนข้อความทั้งหมด */
+  .logo-text,
+  .side-menu .logo > *:not(.logo-icon) {
+    display: none !important;
+  }
+
+  .logo {
+    justify-content: center;
+    padding: 0.4rem;
+    width: auto;
+  }
+
+  .logo-icon {
+    width: 1.2rem; /* ปรับให้เท่ากับ minimized */
+    height: 1.2rem;
+    font-size: 0.8rem;
+    box-shadow: 0 2px 6px rgba(113, 82, 243, 0.15);
+    margin: 0;
+  }
+
+  /* Menu items styles */
+  .menu-items {
+    gap: 0.7rem;
+    padding: 0.2rem;
+  }
+
+  .menu-item {
+    padding: 0.4rem; /* ปรับให้เท่ากับ minimized */
+    margin-bottom: 0.2rem;
+    justify-content: center;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    min-height: 35px;
+  }
+
+  .menu-text {
+    display: none;
+  }
+
+  .menu-icon {
+    margin: 0;
+    font-size: 1.1rem; /* ลดขนาดไอคอน */
+    transition: transform 0.2s ease;
+  }
+
+  /* Active state */
+  .menu-item.active {
+    background: linear-gradient(135deg, #6366f1 0%, #7152F3 100%);
+    box-shadow: 0 2px 6px rgba(99, 102, 241, 0.15);
+  }
+
+  .menu-item.active .menu-icon {
+    transform: scale(1.05);
+    color: white;
+  }
+
+  /* Hover/Touch effects */
+  .menu-item:hover,
+  .menu-item:active {
+    background-color: rgba(99, 102, 241, 0.08);
+  }
+
+  .menu-item:hover .menu-icon,
+  .menu-item:active .menu-icon {
+    transform: scale(1.05);
+    color: #6366f1;
+  }
+
+  /* Better touch feedback */
+  .menu-item:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
+  }
+
+  /* Tooltip */
+  .menu-item:hover::after {
+    content: attr(title);
+    position: absolute;
+    left: 110%;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(51, 51, 51, 0.95);
+    color: white;
+    padding: 0.25rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Overlay */
+  .menu-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+  }
+
+  .side-menu.mobile-open + .menu-overlay {
+    display: block;
+    opacity: 1;
+  }
+
+  .logo:hover::after {
+    content: "Close";
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: #333;
+    color: white;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    margin-left: 10px;
+    z-index: 1000;
+  }
+}
+
+/* Add smooth transitions */
+.side-menu {
+  transition: all 0.3s ease-in-out;
+}
+
+.side-menu.minimized {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Prevent body scroll when menu is open */
+body.menu-open {
+  overflow: hidden;
+}
+
+/* Improve touch targets on mobile */
+@media (hover: none) and (pointer: coarse) {
+  .menu-item,
+  .logo,
+  .theme-switch {
+    min-height: 44px;
+  }
+
+  .menu-item {
+    margin-bottom: 2px;
+  }
+}
+
+/* Fix for iOS Safari */
+@supports (-webkit-touch-callout: none) {
+  .side-menu {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Add momentum scrolling for menu items */
+.menu-items {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
+/* Add active state feedback */
+.menu-item:active {
+  background-color: rgba(113, 82, 243, 0.1);
+  transform: scale(0.98);
+}
+
+/* Custom scrollbar for mobile */
+@media screen and (max-width: 768px) {
+  .menu-items::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .menu-items::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .menu-items::-webkit-scrollbar-thumb {
+    background-color: rgba(113, 82, 243, 0.3);
+    border-radius: 4px;
+  }
+}

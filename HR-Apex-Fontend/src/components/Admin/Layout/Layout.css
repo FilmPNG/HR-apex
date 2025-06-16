@@ -1,0 +1,46 @@
+.dashboard-main {
+  flex: 1;
+  padding: 20px;
+  padding-top: 30px;
+  background-color: #F5F6FA;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+/* Responsive Layout Styles */
+@media screen and (max-width: 1024px) {
+  .dashboard-main {
+    padding: 15px;
+    padding-top: 25px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .dashboard-main {
+    padding: 12px;
+    padding-top: 70px; /* Increased top padding to accommodate mobile header */
+    height: calc(100vh - 60px); /* Adjust for mobile header height */
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .dashboard-main {
+    padding: 10px;
+    padding-top: 65px;
+  }
+}
+
+/* Fix for iOS Safari 100vh issue */
+@supports (-webkit-touch-callout: none) {
+  .dashboard-main {
+    height: -webkit-fill-available;
+  }
+}
+
+/* Improve scrolling on mobile */
+@media (hover: none) and (pointer: coarse) {
+  .dashboard-main {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
+}

@@ -1,0 +1,650 @@
+.edit-modal {
+  background: #fff;
+  width: 90%;
+  max-width: 600px;
+  max-height: 85vh;
+  animation: fadeIn 0.3s ease;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+
+.edit-modal-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.edit-modal-header h3 {
+  margin: 0;
+  color: #1f2937;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.edit-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.edit-close-btn:hover {
+  background: #f3f4f6;
+  color: #1f2937;
+}
+
+.edit-news-form {
+  padding: 1.6rem;
+  overflow-y: auto;
+  flex: 1;
+  padding-bottom: 0px; /* ป้องกันเนื้อหาทับปุ่ม actions */
+}
+
+.edit-news-form::-webkit-scrollbar {
+  width: 4px;
+}
+
+.edit-news-form::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.edit-news-form::-webkit-scrollbar-thumb {
+  background-color: #e5e7eb;
+}
+
+.edit-news-form::-webkit-scrollbar-thumb:hover {
+  background-color: #d1d5db;
+}
+
+.edit-form-group {
+  margin-bottom: 1.25rem;
+}
+
+.edit-form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.edit-form-group input,
+.edit-form-group textarea,
+.edit-form-group select {
+  width: 100%;
+  padding: 0.625rem;
+  border: 1px solid #e5e7eb;
+  background-color: #fff;
+  transition: all 0.2s ease;
+  color: #1f2937;
+  font-size: 0.875rem;
+}
+
+.edit-form-group textarea {
+  min-height: 120px;
+  resize: vertical;
+  line-height: 1.5;
+  max-height: 300px;
+}
+
+.edit-form-group input:hover,
+.edit-form-group textarea:hover,
+.edit-form-group select:hover {
+  border-color: #9ca3af;
+}
+
+.edit-form-group input:focus,
+.edit-form-group textarea:focus,
+.edit-form-group select:focus {
+  border-color: #6366f1;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+}
+
+.edit-file-input-wrapper {
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.edit-file-input-wrapper input[type="file"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  border: 0;
+}
+
+.edit-file-upload-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background-color: #f3f4f6;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  font-size: 0.875rem;
+  border: 1px solid #e5e7eb;
+  width: 100%;
+}
+
+.edit-file-upload-label:hover {
+  background-color: #e5e7eb;
+  color: #1f2937;
+}
+
+.selected-file {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #4b5563;
+  padding: 0.5rem;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+}
+
+.edit-modal-actions {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  background: #fff;
+  position: sticky;
+  bottom: 0;
+  z-index: 20; /* เพิ่ม z-index ให้สูงขึ้น */
+}
+
+.edit-modal-btn {
+  padding: 0.625rem 1rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  min-width: 80px;
+}
+
+.edit-btn-cancel {
+  background: #fff;
+  color: #4b5563;
+  border-color: #e5e7eb;
+}
+
+.edit-btn-cancel:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.edit-btn-save {
+  background: #6366f1;
+  color: white;
+}
+
+.edit-btn-save:hover {
+  background: #4f46e5;
+}
+
+.edit-file-preview {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.edit-file-preview a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #4b5563;
+  text-decoration: none;
+  font-size: 0.875rem;
+  padding: 0.75rem;
+  border-radius: 4px;
+  background: white;
+  transition: all 0.2s ease;
+  border: 1px solid #e5e7eb;
+}
+
+.edit-file-preview a:hover {
+  background-color: #f3f4f6;
+  border-color: #6366f1;
+  color: #6366f1;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(99, 102, 241, 0.1);
+}
+
+.edit-file-preview svg {
+  font-size: 1.25rem;
+  color: #6366f1;
+  flex-shrink: 0;
+}
+
+/* Dark mode support */
+[data-theme='dark'] .edit-modal {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+[data-theme='dark'] .edit-modal-header {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+[data-theme='dark'] .edit-modal-header h3 {
+  color: #f9fafb;
+}
+
+[data-theme='dark'] .edit-close-btn {
+  color: #9ca3af;
+}
+
+[data-theme='dark'] .edit-close-btn:hover {
+  background: #374151;
+  color: #f9fafb;
+}
+
+[data-theme='dark'] .edit-form-group label {
+  color: #e5e7eb;
+}
+
+[data-theme='dark'] .edit-form-group input,
+[data-theme='dark'] .edit-form-group textarea,
+[data-theme='dark'] .edit-form-group select {
+  background: #374151;
+  border-color: #4b5563;
+  color: #f9fafb;
+}
+
+[data-theme='dark'] .edit-form-group input:hover,
+[data-theme='dark'] .edit-form-group textarea:hover,
+[data-theme='dark'] .edit-form-group select:hover {
+  border-color: #6b7280;
+}
+
+[data-theme='dark'] .edit-file-upload-label {
+  background: #374151;
+  border-color: #4b5563;
+  color: #e5e7eb;
+}
+
+[data-theme='dark'] .edit-file-upload-label:hover {
+  background: #4b5563;
+  color: #f9fafb;
+}
+
+[data-theme='dark'] .edit-file-preview {
+  background: #374151;
+  border-color: #4b5563;
+}
+
+[data-theme='dark'] .edit-modal-actions {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+[data-theme='dark'] .edit-btn-cancel {
+  background: #374151;
+  border-color: #4b5563;
+  color: #e5e7eb;
+}
+
+[data-theme='dark'] .edit-btn-cancel:hover {
+  background: #4b5563;
+  border-color: #6b7280;
+}
+
+.delete-confirm-modal {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  animation: popup-appear 0.3s ease-out;
+}
+
+@keyframes popup-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.delete-icon-circle {
+  width: 64px;
+  height: 64px;
+  background-color: #fff2f2;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
+
+.delete-icon {
+  font-size: 2rem;
+  color: #ef4444;
+}
+
+.delete-title {
+  margin: 0 0 1rem;
+  color: #1f2937;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.delete-message {
+  margin: 0.5rem 0;
+  color: #4b5563;
+  font-size: 1rem;
+}
+
+.delete-warning {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+.delete-modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.delete-modal-actions button {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  min-width: 100px;
+}
+
+.delete-cancel-btn {
+  background-color: #e5e7eb;
+  color: #4b5563;
+  border: none;
+}
+
+.delete-cancel-btn:hover {
+  background-color: #d1d5db;
+}
+
+.delete-confirm-btn {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+}
+
+.delete-confirm-btn:hover {
+  background-color: #dc2626;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.delete-modal {
+  background: white;
+  width: 380px;
+  border-radius: 12px;
+  padding: 32px 24px;
+  text-align: center;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+.delete-icon {
+  margin-bottom: 20px;
+}
+
+.delete-icon svg {
+  width: 48px;
+  height: 48px;
+  color: #ff4d4f;
+}
+
+.delete-modal h2 {
+  font-size: 24px;
+  color: #111;
+  margin: 0 0 12px 0;
+  font-weight: 600;
+}
+
+.delete-modal p {
+  font-size: 15px;
+  color: #666;
+  margin: 0 0 28px 0;
+  line-height: 1.5;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.modal-buttons button {
+  flex: 1;
+  padding: 10px 0;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.cancel-button {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.cancel-button:hover {
+  background: #e0e0e0;
+}
+
+.delete-button {
+  background: #ff4d4f;
+  color: white;
+}
+
+.delete-button:hover {
+  background: #ff7875;
+}
+
+/* Animation for the modal */
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.attachments-section {
+  margin-top: 1rem;
+  border: 2px dashed #e5e7eb;
+  padding: 1.5rem;
+  border-radius: 8px;
+  background-color: #f9fafb;
+  transition: all 0.2s ease;
+}
+
+.attachments-section:hover {
+  border-color: #6366f1;
+  background-color: #f3f4f6;
+}
+
+.attachments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.attachment-item {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.attachment-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border-color: #6366f1;
+}
+
+.attachment-item .file-icon {
+  color: #6366f1;
+  font-size: 1.25rem;
+  margin-right: 0.75rem;
+  flex-shrink: 0;
+}
+
+.attachment-item .file-name {
+  flex: 1;
+  font-size: 0.875rem;
+  color: #4b5563;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 20ch;
+}
+
+.attachment-item .remove-btn {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  padding: 0.25rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  margin-left: 0.5rem;
+}
+
+.attachment-item .remove-btn:hover {
+  color: #ef4444;
+  background-color: #fee2e2;
+}
+
+.file-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem;
+  border: 2px dashed #e5e7eb;
+  border-radius: 8px;
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.file-input-wrapper:hover {
+  border-color: #6366f1;
+  background-color: #f9fafb;
+}
+
+.file-input-wrapper input[type="file"] {
+  display: none;
+}
+
+.file-input-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+.file-input-label .upload-icon {
+  font-size: 2rem;
+  color: #6366f1;
+}
+
+.file-input-label .upload-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.file-input-label .upload-hint {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+/* Dark mode support */
+[data-theme='dark'] .attachments-section {
+  background-color: #1f2937;
+  border-color: #374151;
+}
+
+[data-theme='dark'] .attachment-item {
+  background-color: #374151;
+  border-color: #4b5563;
+}
+
+[data-theme='dark'] .attachment-item .file-name {
+  color: #e5e7eb;
+}
+
+[data-theme='dark'] .attachment-item:hover {
+  border-color: #6366f1;
+  background-color: #4b5563;
+}
+
+[data-theme='dark'] .file-input-wrapper {
+  background-color: #1f2937;
+  border-color: #374151;
+}
+
+[data-theme='dark'] .file-input-label {
+  color: #e5e7eb;
+}
+
+[data-theme='dark'] .file-input-label .upload-hint {
+  color: #9ca3af;
+}

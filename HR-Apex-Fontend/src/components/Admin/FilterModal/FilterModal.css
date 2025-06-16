@@ -1,0 +1,156 @@
+.filter-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.filter-modal {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: 90%;
+  max-width: 300px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  animation: scaleIn 0.3s ease;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.filter-modal h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 1.2rem 0;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.filter-section {
+  margin-bottom: 1.2rem;
+}
+
+.filter-section h4 {
+  font-size: 0.95rem;
+  margin: 0 0 0.8rem 0;
+  color: var(--text-primary);
+}
+
+.department-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.department-item, .type-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.department-item input[type="checkbox"],
+.type-item input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #7152F3;
+  cursor: pointer;
+}
+
+.type-options {
+  display: flex;
+  gap: 2rem;
+}
+
+.reset-button {
+  text-align: center;
+  margin: 1rem 0;
+}
+
+.reset-button button {
+  background: none;
+  border: none;
+  color: #7152F3;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.reset-button button:hover {
+  opacity: 0.8;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+.cancel-btn, .apply-btn {
+  flex: 1;
+  padding: 0.6rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.cancel-btn {
+  background: #F5F5F5;
+  color: #333;
+}
+
+.apply-btn {
+  background: #7152F3;
+  color: white;
+  font-weight: 500;
+}
+
+.cancel-btn:hover {
+  background: #EBEBEB;
+}
+
+.apply-btn:hover {
+  background: #5e42d8;
+}
+
+/* Dark mode adjustments */
+[data-theme='dark'] .filter-modal {
+  background: #2C2C3A;
+  border: 1px solid var(--border-color);
+}
+
+[data-theme='dark'] .reset-button button {
+  color: #8f75ff;
+}
+
+[data-theme='dark'] .cancel-btn {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+[data-theme='dark'] .cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme='dark'] label {
+  color: var(--text-primary);
+}

@@ -1,0 +1,155 @@
+.newholiday-container {
+  min-height: 100vh;
+  background: -webkit-linear-gradient(to right, #8873FE, #6456F6);
+  background: linear-gradient(to right, #8873FE, #6456F6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.newholiday-container .dashboard-main {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 40px;
+}
+
+.newholiday-form {
+  max-width: 500px; /* Reduced width */
+  width: 85%; /* Adjusted for responsiveness */
+  margin: 1.5rem auto; /* Slightly reduced margin */
+  padding: 2rem; /* Reduced padding */
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.newholiday-form:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.newholiday-form-header {
+  margin-bottom: 2rem;
+  text-align: left;
+}
+
+.newholiday-form-header h1 {
+  font-size: 1.5rem;
+  color: #6366f1; /* Updated primary color */
+  margin-bottom: 0.25rem;
+}
+
+.newholiday-form-header p {
+  font-size: 0.95rem;
+  color: #6b7280;
+  margin-bottom: 1rem;
+}
+
+.newholiday-form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+.newholiday-form-group {
+  margin-bottom: 1.5rem;
+}
+
+.newholiday-form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.newholiday-form-group label {
+  font-weight: 500; /* Adjusted font weight */
+  font-size: 0.875rem; /* Adjusted font size */
+  color: #6b7280; /* Updated color to match the image */
+  margin-bottom: 0.25rem; /* Adjusted spacing */
+  display: block;
+}
+
+.newholiday-form-group input,
+.newholiday-form-group select,
+.newholiday-form-group textarea {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #374151;
+  background: #f9fafb;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.newholiday-form-group input:focus,
+.newholiday-form-group select:focus,
+.newholiday-form-group textarea:focus {
+  border-color: #6366f1; /* Updated primary color */
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); /* Updated primary color */
+  outline: none;
+}
+
+.newholiday-input-with-icon {
+  position: relative;
+  display: flex; /* Align icon and input properly */
+  align-items: center; /* Center-align icon and input vertically */
+}
+
+.newholiday-icon {
+  position: absolute;
+  left: 0.75rem; /* Adjusted spacing to prevent overlap */
+  color: #6b7280; /* Neutral text color */
+  font-size: 1.25rem;
+  pointer-events: none; /* Prevent interaction with the icon */
+}
+
+.newholiday-input-with-icon input {
+  flex: 1; /* Allow input to take remaining space */
+  padding-left: 2.5rem; /* Increased padding to avoid overlap with the icon */
+}
+
+.newholiday-form-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2rem;
+}
+
+.newholiday-btn {
+  padding: 0.875rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.newholiday-btn:hover {
+  transform: none; /* Removed hover animation */
+}
+
+.newholiday-btn-cancel {
+  background: #f3f4f6;
+  color: #4b5563;
+  border: 1.5px solid #d1d5db;
+}
+
+.newholiday-btn-cancel:hover {
+  background: #e5e7eb;
+  transform: translateY(-2px);
+}
+
+.newholiday-btn-save {
+  background: #6366f1; /* Updated primary color */
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2); /* Updated primary color */
+}
+
+.newholiday-btn-save:hover {
+  background: #4f46e5;
+  transform: translateY(-2px);
+}
