@@ -17,16 +17,26 @@ if (!fs.existsSync(uploadsDir)) {
 // Configure multer storage to save files with unique names
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, uploadsDir); // Save files to the 'uploads' directory
+    cb(null, uploadsDir); // หรือ './uploads'
   },
   filename: (req, file, cb) => {
-    // Generate a unique filename using timestamp and random string, retaining the original file extension
-    const uniqueSuffix = Date.now() + '-' + Math.random().toString(36).substring(2, 15);
-    const fileExtension = path.extname(file.originalname); // Get the file's extension
-    const filename = `${uniqueSuffix}${fileExtension}`;
-    cb(null, filename); // Set the unique filename
-  },
+    let originalName = path.parse(file.originalname).name;
+    const ext = path.extname(file.originalname);
+    const suffix = '_' + Math.random().toString(36).substring(2, 8);
+
+    // แปลงชื่อให้เป็น UTF-8 (กรณีมีภาษาไทย)
+    originalName = Buffer.from(originalName, 'latin1').toString('utf8');
+
+    // ตัดชื่อถ้ายาวเกิน 200 ตัว
+    if (originalName.length > 200) {
+      originalName = originalName.substring(0, 200);
+    }
+
+    const filename = `${originalName}${suffix}${ext}`;
+    cb(null, filename);
+  }
 });
+
 
 // File filter to allow only specific file types (JPEG, PNG, PDF)
 const fileFilter = (req, file, cb) => {
@@ -551,7 +561,15 @@ exports.getnewsbyadmin = async (req, res) => {
 
 
 exports.getnewsbyuser = async (req, res) => {
-  const sql = "SELECT * FROM news WHERE hide = 0";
+  const sql = `
+    SELECT 
+      n.*,
+      a.file_path,
+      SUBSTRING_INDEX(a.file_path, '/', -1) AS file_name
+    FROM news n
+    LEFT JOIN attachment a ON n.attachment_id = a.attachment_id
+    WHERE n.hide = 0
+  `;
 
   try {
     const [results] = await pool.query(sql);
@@ -566,6 +584,8 @@ exports.getnewsbyuser = async (req, res) => {
     res.status(500).send("Error fetching news.");
   }
 };
+
+
 
 exports.hideNewsById = async (req, res) => {
   const { id } = req.params;

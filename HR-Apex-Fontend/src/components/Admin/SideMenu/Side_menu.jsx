@@ -25,7 +25,9 @@ const SideMenu = ({ isMinimized, onToggleMinimize, hasPopup, isOpen, onClose }) 
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
   const userRole = localStorage.getItem('userRole');
-  const employeeId = localStorage.getItem('employeeId');
+  
+  const employee = JSON.parse(localStorage.getItem('employee'))
+  const employeeId = employee?.employee_id
 
   const getAccountPath = () => {
     if (userRole === 'superadmin') {
@@ -82,7 +84,7 @@ const SideMenu = ({ isMinimized, onToggleMinimize, hasPopup, isOpen, onClose }) 
   const userMenuItems = [
     { icon: <FaEnvelope />, text: 'News', path: '/user/news' },
     // My Profile is not a standard page, so linking to admin's detail page for now
-    { icon: <FaUsers />, text: 'My Profile', path: `/admin/employee/${employeeId}` }, 
+    { icon: <FaUsers />, text: 'My Profile', path: `/User/${employeeId}` }, 
     { icon: <FaFileAlt />, text: 'Disbursement', path: '/user/disbursement' },
      // User has no general payroll page, linking to their specific detail page
     { icon: <FaMoneyBillWave />, text: 'Payroll', path: `/user/payroll-detail/${employeeId}` },

@@ -66,6 +66,7 @@ function App() {
             <Route path="/admin/account" element={<Account />} />
             <Route path="/admin/edit-account/:id" element={<EditAccount />} />
             <Route path="/admin/notifications" element={<Notification />} />
+            <Route path="/admin/employee/:id" element={<ProfileDetail />} />
           </Route>
 
           {/* Super Admin Routes */}
@@ -84,12 +85,13 @@ function App() {
             <Route path="/user/holidays" element={<UserHolidays />} />
             <Route path="/user/payroll-detail/:id" element={<UserPayrollDetail />} />
             <Route path="/user/notifications" element={<UserNotifications />} />
+            <Route path="/User/:id" element={<ProfileDetail />} />
           </Route>
 
-          {/* Routes accessible to users and admins */}
+          {/* Routes accessible to users and admins
           <Route element={<ProtectedRoute allowedRoles={['employee', 'admin', 'superadmin']} />}>
             <Route path="/admin/employee/:id" element={<ProfileDetail />} />
-          </Route>
+          </Route> */}
         </Routes>
       </BrowserRouter>
     </ThemeProvider>

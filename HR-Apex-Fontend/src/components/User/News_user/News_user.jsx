@@ -6,73 +6,39 @@ import SideMenu from "../../Admin/SideMenu/Side_menu";
 import Topbar from "../../Admin/Topbar/Topbar";
 import './News_user.css';
 
-const API_URL = `${import.meta.env.VITE_API_URL}/api/news`;
-
-// Mock news data for user role
-const mockNews = [
-  {
-    NewsId: "NEWS001",
-    Title: "Company Annual Team Building Event",
-    Category: "Activity",
-    Content: "Get ready for an exciting day of team building and fun! Our annual company event will be held at Paradise Beach Resort.\n\nDate: July 15th, 2025\nTime: 9:00 AM - 5:00 PM\n\nActivities include:\n- Team building exercises\n- Beach sports\n- Group lunch\n- Awards ceremony\n\nPlease RSVP by July 1st through the HR portal.",
-    CreatedAt: "2025-06-08T10:00:00",
-    Attachment: "team_building_2025.jpg",
-    isPinned: 1,
-    Hidenews: 0
-  },
-  {
-    NewsId: "NEWS002",
-    Title: "New Health Insurance Benefits",
-    Category: "Announcement",
-    Content: "We are pleased to announce improvements to our health insurance coverage starting July 1st, 2025.\n\nKey updates:\n- Increased dental coverage\n- New mental health support services\n- Extended family coverage options\n- Improved prescription benefits\n\nPlease review the attached documentation for full details.",
-    CreatedAt: "2025-06-07T14:30:00",
-    Attachment: "health_benefits_2025.pdf",
-    isPinned: 1,
-    Hidenews: 0
-  },
-  {
-    NewsId: "NEWS003",
-    Title: "Office Software Updates",
-    Category: "IT",
-    Content: "Important system updates will be installed this weekend.\n\nUpdate Schedule:\n- Start: Saturday, June 14th, 22:00\n- End: Sunday, June 15th, 04:00\n\nAction Required:\n- Save all work before leaving on Friday\n- Keep your laptops powered on and connected to the network\n\nNew features include improved security and performance enhancements.",
-    CreatedAt: "2025-06-06T09:15:00",
-    Attachment: "system_update_guide.pdf",
-    isPinned: 0,
-    Hidenews: 0
-  },
-  {
-    NewsId: "NEWS004",
-    Title: "Quarterly Town Hall Meeting",
-    Category: "Announcement",
-    Content: "Join us for our Q2 2025 Town Hall Meeting!\n\nDate: June 20th, 2025\nTime: 2:00 PM - 4:00 PM\nLocation: Main Conference Room & Virtual\n\nAgenda:\n- Q2 Performance Review\n- New Project Announcements\n- Employee Recognition\n- Q&A Session\n\nVirtual meeting link will be sent 1 hour before the event.",
-    CreatedAt: "2025-06-05T11:20:00",
-    Attachment: "town_hall_agenda.pdf",
-    isPinned: 0,
-    Hidenews: 0
-  },
-  {
-    NewsId: "NEWS005",
-    Title: "New Office Layout",
-    Category: "Announcement",
-    Content: "We're excited to announce our new office layout plan starting next month.\n\nChanges include:\n- New collaborative spaces\n- Updated meeting rooms\n- Improved break areas\n- Additional quiet zones\n\nPlease check the attached map for your new seating arrangement.",
-    CreatedAt: "2025-06-04T15:45:00",
-    Attachment: "new_office_layout.pdf",
-    isPinned: 0,
-    Hidenews: 0
-  }
-];
+const API_URL = 'http://localhost:5000/api/news/getnewsbyuser/';
 
 function mapApiNewsData(apiData) {
   return apiData.map(item => ({
-    NewsId: item.newsId,
-    Title: item.title,
-    Category: item.category,
+    NewsId: item.id.toString(),
+    Title: item.topic,
+    Category: getCategoryName(item.cate_news_id),
     Content: item.content,
-    CreatedAt: item.created_at,
-    Attachment: item.attachment,
-    isPinned: item.isPinned === true || item.isPinned === 1 ? 1 : 0,
-    Hidenews: item.Hidenews === true || item.Hidenews === 1 ? 1 : 0
+    CreatedAt: item.create_date,
+    AttachmentId: item.attachment_id || item.news_attachment_id || null,
+    AttachmentPath: item.file_path || null,
+    Attachment: item.file_name || null,
+    isPinned: item.pin === 1 ? 1 : 0,
+    Hidenews: item.hide === 1 ? 1 : 0
   }));
+}
+
+// Helper function to get category name based on cate_news_id
+function getCategoryName(cateNewsId) {
+  const categories = {
+    1: 'Announcement',
+    2: 'Activity', 
+    3: 'IT',
+    // เพิ่มหมวดหมู่อื่นๆ ตามต้องการ
+  };
+  return categories[cateNewsId] || 'General';
+}
+
+// Helper function to get attachment name (คุณอาจต้องปรับแต่งตามระบบไฟล์ของคุณ)
+function getAttachmentName(attachmentId) {
+  // ถ้ามี API สำหรับดึงข้อมูล attachment สามารถเรียกใช้ได้ที่นี่
+  // หรือส่ง attachment name มาจาก API เลย
+  return `attachment_${attachmentId}`;
 }
 
 export default function News_user() {
@@ -82,6 +48,8 @@ export default function News_user() {
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [pinnedNews, setPinnedNews] = useState(new Set());
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     // Check if user is logged in
@@ -95,10 +63,18 @@ export default function News_user() {
 
   const fetchNews = async () => {
     try {
-      // Sort news to show pinned items first, then by date
-      const sortedNews = mockNews
-        .filter(item => !item.Hidenews) // Only show non-hidden news for users
-        .sort((a, b) => {
+      setLoading(true);
+      setError(null);
+      
+      const response = await axios.get(API_URL);
+      console.log('API Response:', response.data);
+      
+      // กรองข้อมูลที่ไม่ซ่อน (hide === 0) และแปลงข้อมูล
+      const visibleNews = response.data.filter(item => item.hide === 0);
+      const mappedNews = mapApiNewsData(visibleNews);
+      
+      // เรียงลำดับข่าวให้แสดง pin ก่อน แล้วเรียงตามวันที่
+      const sortedNews = mappedNews.sort((a, b) => {
         if (a.isPinned !== b.isPinned) {
           return b.isPinned - a.isPinned;
         }
@@ -112,8 +88,12 @@ export default function News_user() {
         sortedNews.filter(item => item.isPinned === 1).map(item => item.NewsId)
       );
       setPinnedNews(pinnedSet);
+      
     } catch (error) {
       console.error('Error fetching news:', error);
+      setError('ไม่สามารถดึงข้อมูลข่าวได้ กรุณาลองใหม่อีกครั้ง');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -127,6 +107,15 @@ export default function News_user() {
     const extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp'];
     return extensions.some(ext => filename.toLowerCase().endsWith(ext));
   };
+  const getAttachmentPath = (item) => {
+    // Try file_path first, then construct from file_name
+    if (item.AttachmentPath) {
+      return `http://localhost:5000${item.AttachmentPath}`;
+    } else if (item.AttachmentPath) {
+      return `http://localhost:5000${item.Attachment}`;
+    }
+    return null;
+  };
 
   // Filter news based on search
   const filteredNews = news.filter(item => 
@@ -134,6 +123,41 @@ export default function News_user() {
     item.Category?.toLowerCase().includes(search.toLowerCase()) ||
     item.Content?.toLowerCase().includes(search.toLowerCase())
   );
+
+  if (loading) {
+    return (
+      <div className="dashboard-container" data-user-role="user">
+        <div className="dashboard-main">
+          <SideMenu />
+          <div className="dashboard-content">
+            <Topbar pageTitle="News" pageSubtitle="Company News & Announcements" />
+            <div className="news-card">
+              <div className="loading-message">กำลังโหลดข้อมูล...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="dashboard-container" data-user-role="user">
+        <div className="dashboard-main">
+          <SideMenu />
+          <div className="dashboard-content">
+            <Topbar pageTitle="News" pageSubtitle="Company News & Announcements" />
+            <div className="news-card">
+              <div className="error-message">
+                <p>{error}</p>
+                <button onClick={fetchNews}>ลองใหม่อีกครั้ง</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-container" data-user-role="user">
@@ -174,7 +198,7 @@ export default function News_user() {
                 <tbody>
                   {filteredNews.length === 0 ? (
                     <tr>
-                      <td colSpan="3" className="no-news">No news found</td>
+                      <td colSpan="3" className="no-news">ไม่พบข่าวสาร</td>
                     </tr>
                   ) : filteredNews.map(item => (
                     <tr 
@@ -183,7 +207,14 @@ export default function News_user() {
                       onClick={() => handleView(item)}
                       style={{ cursor: 'pointer' }}
                     >
-                      <td>{item.Title}</td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          {pinnedNews.has(item.NewsId) && (
+                            <FiStar style={{ marginRight: '8px', color: '#F59E0B' }} />
+                          )}
+                          {item.Title}
+                        </div>
+                      </td>
                       <td>
                         <div className={`button ${item.Category.toLowerCase()}`}>
                           {item.Category === 'Announcement' ? (
@@ -196,7 +227,7 @@ export default function News_user() {
                           <span className="label">{item.Category}</span>
                         </div>
                       </td>
-                      <td>{item.CreatedAt ? new Date(item.CreatedAt).toLocaleDateString() : '-'}</td>
+                      <td>{item.CreatedAt ? new Date(item.CreatedAt).toLocaleDateString('th-TH') : '-'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -212,18 +243,19 @@ export default function News_user() {
           <div className="modal view-modal">
             <div className="modal-header">
               <div className="modal-title">
-                <h3>{selectedItem.Title}</h3>
-                <div className={`button ${selectedItem.Category.toLowerCase()}`}>
-                  {selectedItem.Category === 'Announcement' ? (
-                    <FiBell className="category-icon" />
-                  ) : selectedItem.Category === 'Activity' ? (
-                    <FiActivity className="category-icon" />
-                  ) : (
-                    <FiTerminal className="category-icon" />
-                  )}
-                  {pinnedNews.has(selectedItem.NewsId) && (
-                    <FiStar style={{ marginLeft: '8px', color: '#F59E0B' }} />
-                  )}
+                <h3>{selectedItem.Title}</h3> 
+                <div className={`button ${selectedItem.Category ? selectedItem.Category.toLowerCase() : 'default'}`}> 
+                  {selectedItem.Category === 'Announcement' ? ( 
+                    <FiBell className="category-icon" /> 
+                  ) : selectedItem.Category === 'Activity' ? ( 
+                    <FiActivity className="category-icon" /> 
+                  ) : ( 
+                    <FiTerminal className="category-icon" /> 
+                  )} 
+                  <span className="label">{selectedItem.Category || 'ไม่ระบุประเภท'}</span>
+                  {pinnedNews.has(selectedItem.NewsId) && ( 
+                    <FiStar style={{ marginLeft: '8px', color: '#F59E0B' }} /> 
+                  )} 
                 </div>
               </div>
               <button 
@@ -238,7 +270,7 @@ export default function News_user() {
               <div className="view-meta">
                 <div className="created-at">
                   <FiClock className="meta-icon" />
-                  {new Date(selectedItem.CreatedAt).toLocaleDateString('en-US', {
+                  {new Date(selectedItem.CreatedAt).toLocaleDateString('th-TH', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric',
@@ -255,32 +287,90 @@ export default function News_user() {
                   ))}
                 </div>
               </div>
+              
 
+                            
               {selectedItem.Attachment && (
                 <div className="attachment-section">
                   <div className="attachment-header">
                     <FiFile className="attachment-icon" />
-                    Attachment
+                    ไฟล์แนบ
                   </div>
                   <div className="attachment-preview">
-                    {isImageFile(selectedItem.Attachment) ? (
+                    {isImageFile(selectedItem.file_name) ? (
                       <div className="image-preview-container">
                         <img 
-                          src={`/uploads/${selectedItem.Attachment}`} 
+                          src={getAttachmentPath(selectedItem)} 
                           alt="News attachment"
                           className="attachment-image"
+                          onError={(e) => {
+                            // Fallback if image fails to load
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'block';
+                          }}
                         />
+                        <div style={{ display: 'none' }} className="image-error">
+                          <FiFile className="attachment-icon" />
+                          <span>ไม่สามารถแสดงรูปภาพได้</span>
+                        </div>
                       </div>
                     ) : (
-                      <a 
-                        href={`/uploads/${selectedItem.Attachment}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <button
+                        onClick={async () => {
+                          try {
+                            const attachmentPath = getAttachmentPath(selectedItem);
+                            if (!attachmentPath) {
+                              console.error('No attachment path found');
+                              alert('ไม่พบไฟล์แนบ');
+                              return;
+                            }
+
+                            const response = await fetch(attachmentPath, {
+                              method: 'GET',
+                              // เพิ่ม headers ถ้าจำเป็น
+                              // headers: {
+                              //   'Authorization': 'Bearer ' + token,
+                              // }
+                            });
+
+                            if (!response.ok) {
+                              throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+
+                            const blob = await response.blob();
+                            const url = window.URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.download = selectedItem.Attachment || 'download';
+                            link.style.display = 'none';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            window.URL.revokeObjectURL(url);
+                            
+                            console.log('Download completed'); // debug
+                          } catch (error) {
+                            console.error('Download failed:', error);
+                            alert('ไม่สามารถดาวน์โหลดไฟล์ได้');
+                          }
+                        }}
                         className="attachment-link"
+                        style={{ 
+                          background: 'none', 
+                          border: 'none', 
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          padding: '8px',
+                          textDecoration: 'underline',
+                          color: '#007bff'
+                        }}
                       >
-                        <span className="filename">{selectedItem.Attachment}</span>
+                        <span className="filename">
+                          {selectedItem.Attachment || selectedItem.AttachmentPath?.split('/').pop() || 'ไฟล์แนบ'}
+                        </span>
                         <FiDownload style={{ marginLeft: '8px' }} />
-                      </a>
+                      </button>
                     )}
                   </div>
                 </div>

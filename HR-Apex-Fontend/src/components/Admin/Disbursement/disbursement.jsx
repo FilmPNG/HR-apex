@@ -166,9 +166,81 @@ const Disbursement = () => {
       attachments: []
     }
   ];
+  // ฟังก์ชันสำหรับแปลงสถานะจาก API เป็นรูปแบบที่ต้องการแสดง
+  const getDisplayStatus = (status) => {
+    const statusMap = {
+      'PENDING': 'Pending',
+      'APPROVED': 'Approved', 
+      'REJECTED': 'Rejected'
+    };
+    return statusMap[status] || status;
+  };
+
+  // ฟังก์ชันสำหรับแปลง category จาก API เป็นรูปแบบที่ต้องการแสดง
+  const getDisplayCategory = (category) => {
+    const categoryMap = {
+      'FOOD': 'Food',
+      'TRAVEL': 'Travel',
+      'EQUIPMENT': 'Equipment', 
+      'SOFTWARE': 'Software',
+      'TRAINING': 'Training',
+      'OTHERS': 'Others'
+    };
+    return categoryMap[category] || category;
+  };
+
+
+  // ฟังก์ชันสำหรับ map ข้อมูลจาก API
+  const mapApiDataToFrontend = (apiData) => {
+    return apiData.map(item => ({
+      id: item.id,
+      employeeName: item.employeeName,
+      employeeId: item.employeeId.toString(), // แปลงเป็น string สำหรับความเข้ากันได้
+      category: getDisplayCategory(item.category),
+      amount: item.amount,
+      status: getDisplayStatus(item.status),
+      date: new Date(item.date).toISOString().split('T')[0], // แปลง ISO date เป็น YYYY-MM-DD
+      details: item.details,
+      email: item.email,
+      attachments: item.attachments || [],
+      rejectReason: item.rejectReason || '' // เพิ่มในกรณีที่ API ส่งมา
+    }));
+  };
+
+  // ฟังก์ชันสำหรับดึงข้อมูลจาก API
+  const fetchDisbursements = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/disbursement/disbursements', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          // เพิ่ม Authorization header หากจำเป็น
+          // 'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const mappedData = mapApiDataToFrontend(data);
+      setDisbursements(mappedData);
+      
+    } catch (error) {
+      console.error('Error fetching disbursements:', error);
+      // สามารถเพิ่มการแสดง notification error ที่นี่ได้
+    }
+  };
+
+  // ฟังก์ชันสำหรับรีเฟรชข้อมูล
+  const refreshDisbursements = () => {
+    fetchDisbursements();
+  };
+
+
   useEffect(() => {
-    // ใช้ mock data แทนการเรียก API
-    setDisbursements(mockDisbursements);
+    fetchDisbursements();
   }, []);
 
   const handleApprove = (id) => {
@@ -280,7 +352,7 @@ const Disbursement = () => {
   };
 
   const handleAddDisbursement = () => {
-    navigate('/adddisburse');
+    navigate('/admin/adddisburse');
   };
 
   const openRejectPopup = (id) => {
@@ -510,7 +582,7 @@ const Disbursement = () => {
                           {item.attachments && item.attachments.map((file) => (
                             <div key={file.id} className="attachment-item">
                               <span className="file-icon">📄</span>
-                              <a href={file.url} target="_blank" rel="noopener noreferrer">
+                              <a href={`http://localhost:5000${file.url}`} target="_blank" rel="noopener noreferrer">
                                 {file.name}
                               </a>
                               {editingId === item.id && (

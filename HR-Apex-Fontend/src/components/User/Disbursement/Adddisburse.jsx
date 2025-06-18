@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiUpload, FiFile, FiX } from 'react-icons/fi';
 import SideMenu from '../../Admin/SideMenu/Side_menu';
@@ -8,6 +8,7 @@ import './Adddisburse.css';
 const Adddisburse = () => {
   const navigate = useNavigate();
   const [isMinimized, setIsMinimized] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
   const [formData, setFormData] = useState({
     employeeName: '',
     category: '',
@@ -16,6 +17,19 @@ const Adddisburse = () => {
     details: '',
     attachments: []
   });
+
+  // ดึงข้อมูล user จาก localStorage เมื่อ component mount
+  useEffect(() => {
+    const userData = localStorage.getItem('employee');
+    if (userData) {
+      const user = JSON.parse(userData);
+      setCurrentUser(user);
+      setFormData(prev => ({
+        ...prev,
+        employeeName: user.employee_id?.toString() || ''
+      }));
+    }
+  }, []);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -72,58 +86,48 @@ const Adddisburse = () => {
     setIsSubmitting(true);
 
     try {
-      // ใช้ URL ที่ถูกต้องจาก environment variable
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      // ใช้ URL ใหม่ที่ระบุ
+      const API_URL = 'http://localhost:5000';
       
-      // 1. บันทึกข้อมูลลง database ด้วย JSON
-      const saveRes = await fetch(`${API_URL}/api/disbursements`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          employeeName: formData.employeeName,
-          category: formData.category,
-          amount: parseFloat(formData.amount),
-          date: formData.date,
-          details: formData.details || '',
-          status: 'Pending' // เพิ่ม default status
-        })
+      // สร้าง FormData สำหรับส่งข้อมูลและไฟล์
+      const formDataToSend = new FormData();
+      
+      // เพิ่มข้อมูลเบื้องต้น
+      formDataToSend.append('employee_id', formData.employeeName); // ส่ง employee_id จาก localStorage
+      formDataToSend.append('category', formData.category);
+      formDataToSend.append('amount', formData.amount);
+      formDataToSend.append('date', formData.date);
+      formDataToSend.append('details', formData.details || '');
+      formDataToSend.append('create_name', currentUser ? `${currentUser.first_name} ${currentUser.last_name}` : ''); // ใช้ชื่อจริงจาก localStorage
+      
+      // เพิ่มไฟล์แนบ (ถ้امี)
+      formData.attachments.forEach((file, index) => {
+        formDataToSend.append('file_name', file);
       });
 
-      if (!saveRes.ok) {
-        throw new Error(`Failed to save disbursement: ${saveRes.status} ${saveRes.statusText}`);
+      // ส่งข้อมูลไปยัง API
+      const response = await fetch(`${API_URL}/api/disbursement/add-disbursement`, {
+        method: 'POST',
+        body: formDataToSend
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Failed to save disbursement: ${response.status} ${response.statusText}`);
       }
 
-      try {
-        // 2. ส่ง email notification (แยก try-catch เพื่อไม่ให้กระทบการบันทึกหลัก)
-        const notifyRes = await fetch(`${API_URL}/api/disbursement/new-notification`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            employeeName: formData.employeeName,
-            category: formData.category,
-            amount: parseFloat(formData.amount),
-            date: formData.date,
-            details: formData.details || ''
-          })
-        });
+      const result = await response.json();
+      console.log('Disbursement saved successfully:', result);
 
-        if (!notifyRes.ok) {
-          console.warn('Email notification failed, but disbursement was saved');
-        }
-      } catch (emailError) {
-        console.warn('Email notification failed:', emailError);
-      }
-
+      // แสดงข้อความสำเร็จ
+      alert('เพิ่มข้อมูลการเบิกเงินสำเร็จ');
+      
       // ถ้าบันทึกสำเร็จ redirect ไปหน้า disbursement
       navigate('/user/disbursement');
       
     } catch (error) {
       console.error('Error:', error);
-      alert(error.message);
+      alert(`เกิดข้อผิดพลาด: ${error.message}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -184,18 +188,25 @@ const Adddisburse = () => {
             <form onSubmit={handleSubmit} className="adddisburse-form">
               <div className="form-grid">
                 <div className="form-group">
-                  <label>Employee Name <span style={{ color: 'red' }}>*</span></label>
-                  <input
-                    type="text"
-                    name="employeeName"
-                    value={formData.employeeName}
-                    onChange={handleChange}
-                    placeholder="Enter name"
-                    className={errors.employeeName ? 'input-field error' : 'input-field'}
-                    required
-                  />
-                  {errors.employeeName && <span className="error-text">{errors.employeeName}</span>}
-                </div>
+            <label>Employee <span style={{ color: 'red' }}>*</span></label>
+
+            {/* ช่องแสดงข้อมูลแบบแก้ไขไม่ได้ */}
+            <input
+              type="text"
+              name="employeeDisplay"
+              value={currentUser ? `${currentUser.employee_id}` : ''}
+              className="input-field"
+              disabled
+              style={{ backgroundColor: '#f5f5f5', cursor: 'not-allowed' }}
+            />
+
+            {/* ช่องซ่อน เพื่อให้ส่งค่า employee_id ไปกับ form */}
+            <input
+              type="hidden"
+              name="employee_id"
+              value={currentUser?.employee_id || ''}
+            />
+          </div>
 
                 <div className="form-group">
                   <label>Category <span style={{ color: 'red' }}>*</span></label>
@@ -207,10 +218,10 @@ const Adddisburse = () => {
                     required
                   >
                     <option value="">Select category</option>
-                    <option value="ค่าเดินทาง">ค่าเดินทาง</option>
-                    <option value="ค่าอาหาร">ค่าอาหาร</option>
-                    <option value="ค่าอุปกรณ์">ค่าอุปกรณ์</option>
-                    <option value="อื่นๆ">อื่นๆ</option>
+                    <option value="TRAVEL">ค่าเดินทาง</option>
+                    <option value="FOOD">ค่าอาหาร</option>
+                    <option value="EQUIPMENT">ค่าอุปกรณ์</option>
+                    <option value="OTHER">อื่นๆ</option>
                   </select>
                   {errors.category && <span className="error-text">{errors.category}</span>}
                 </div>
@@ -268,7 +279,8 @@ const Adddisburse = () => {
                     <label htmlFor="file-attachments" className="upload-label">
                       <div className="upload-icon">
                         <FiUpload />
-                      </div>                      <p>Drag and drop or <span className="choose-text">choose files</span> to upload</p>
+                      </div>
+                      <p>Drag and drop or <span className="choose-text">choose files</span> to upload</p>
                       <p className="supported-text">Supported files: PDF, DOC, DOCX, JPG, JPEG, PNG</p>
                     </label>
                   </div>

@@ -102,11 +102,13 @@ function AddNew() {
       formDataToSend.append('cate_news_id', formData.cate_news_id);
       formDataToSend.append('content', formData.content);
       formDataToSend.append('create_name', formData.create_name);
+      console.log('formdata ผ่าน')
       
       // Append all files as file_name array
       if (formData.file_name && formData.file_name.length > 0) {
         formData.file_name.forEach((file, index) => {
           formDataToSend.append('file_name', file);
+          console.log('เข้า if foemdata')
         });
       }
 
@@ -118,7 +120,8 @@ function AddNew() {
       });
 
       if (response.data) {
-        navigate('/news');
+        console.log('เข้า if res')
+        navigate('/admin/news');
       }
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -129,7 +132,7 @@ function AddNew() {
   }
 
   const handleCancel = () => {
-    navigate('/news')
+    navigate('/admin/addnews')
   }
   
   const FileUploadSection = () => {

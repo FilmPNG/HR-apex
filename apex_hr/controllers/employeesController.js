@@ -119,7 +119,10 @@ exports.addEmployee = async (req, res) => {
     // Work experience data - array of objects with work experience info
     work_experience_data = [],
     father_age,
-    mother_age
+    mother_age,
+    age,
+    // เพิ่ม field สำหรับ descriptions ของไฟล์
+    file_descriptions = []
   } = req.body;
 
   const connection = await pool.getConnection();
@@ -127,8 +130,7 @@ exports.addEmployee = async (req, res) => {
   try {
     await connection.beginTransaction();
 
-    let finalAttachmentId = null;
-    let profileImagePath = null; // เพิ่มตัวแปรสำหรับเก็บ path ของรูป profile
+    let profileImagePath = null;
 
     // Step 1: Handle profile image upload
     if (req.files && req.files['profile_image'] && req.files['profile_image'].length > 0) {
@@ -144,7 +146,7 @@ exports.addEmployee = async (req, res) => {
     );
     const address_card_id = insertAddressCard.insertId;
 
-    // Step 3: Insert address_house (ใหม่)
+    // Step 3: Insert address_house
     const [insertAddressHouse] = await connection.query(
       `INSERT INTO address_house (address, sub_district, district, province, postal_code)
        VALUES (?, ?, ?, ?, ?)`,
@@ -152,53 +154,7 @@ exports.addEmployee = async (req, res) => {
     );
     const address_house_id = insertAddressHouse.insertId;
 
-    // Step 4: Insert main attachment
-    const [insertAttachment] = await connection.query(
-      `INSERT INTO attachment (reference_type, create_name, modify_name, create_date, modify_date)
-       VALUES (?, ?, ?, NOW(), NOW())`,
-      ['employee', create_name, modify_name]
-    );
-    finalAttachmentId = insertAttachment.insertId;
-
-    const uploadedFiles = [];
-    const allAttachmentIds = [finalAttachmentId];
-
-    // Step 5: Handle uploaded files (documents)
-    if (req.files && req.files['file_name'] && req.files['file_name'].length > 0) {
-      for (let i = 0; i < req.files['file_name'].length; i++) {
-        const file = req.files['file_name'][i];
-        const fileName = file.filename;
-        const filePath = `/uploads/${fileName}`;
-
-        if (i === 0) {
-          await connection.query(
-            `UPDATE attachment SET file_name = ?, file_path = ?, modify_date = NOW() WHERE attachment_id = ?`,
-            [fileName, filePath, finalAttachmentId]
-          );
-
-          uploadedFiles.push({
-            attachment_id: finalAttachmentId,
-            file_name: fileName,
-            file_path: filePath
-          });
-        } else {
-          const [newAttachment] = await connection.query(
-            `INSERT INTO attachment (file_name, file_path, reference_type, create_name, modify_name, create_date, modify_date)
-             VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
-            [fileName, filePath, 'employee', create_name, modify_name]
-          );
-          allAttachmentIds.push(newAttachment.insertId);
-          uploadedFiles.push({
-            attachment_id: newAttachment.insertId,
-            file_name: fileName,
-            file_path: filePath
-          });
-        }
-      }
-    }
-
-    // Step 6: Insert employee and link with address_card_id, address_house_id, attachment_id, and employee_type_id
-    // ใช้ profileImagePath ใน pic_path แทนที่จะใช้ uploadedFiles[0]?.file_path
+    // Step 4: Insert employee (ไม่มี attachment_id)
     const [employeeInsert] = await connection.query(
       `INSERT INTO employee (
         first_name, last_name, nickname, pic_path, mobile_no, birth_date, gender,
@@ -211,13 +167,13 @@ exports.addEmployee = async (req, res) => {
         spouse_name, spouse_birthdate, spouse_occupation,
         total_siblings, order_of_siblings, total_children, total_boys, total_girls,
         language_speaking, language_reading, language_writing,
-        criminal_record, upcountry_areas, attachment_id, address_card_id, address_house_id, employee_type_id,father_age,mother_age
+        criminal_record, upcountry_areas, address_card_id, address_house_id, employee_type_id, father_age, mother_age, age
       ) VALUES (
-        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?
+        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
       )`,
       [
         first_name, last_name, nickname,
-        profileImagePath, // ใช้ profileImagePath สำหรับ pic_path
+        profileImagePath,
         mobile_no, birth_date, gender,
         nationality, religion, marital_status, email_person, line_id,
         id_card_number, id_card_issued_date, id_card_expiry_date,
@@ -228,13 +184,53 @@ exports.addEmployee = async (req, res) => {
         spouse_name, spouse_birthdate, spouse_occupation,
         total_siblings, order_of_siblings, total_children, total_boys, total_girls,
         language_speaking, language_reading, language_writing,
-        criminal_record, upcountry_areas, finalAttachmentId, address_card_id, address_house_id, employee_type_id,father_age,mother_age
+        criminal_record, upcountry_areas, address_card_id, address_house_id, employee_type_id, father_age, mother_age, age
       ]
     );
 
     const insertedEmployeeId = employeeInsert.insertId;
 
-    // Step 7.1: Insert contact_person1
+    // Step 5: จัดการไฟล์แนบ (ถ้ามี) โดยใช้ description ที่แตกต่างกัน
+   const uploadedFiles = [];
+const allAttachmentIds = [];
+
+// Parse file_descriptions จาก JSON string
+let fileDescriptions = [];
+if (req.body.file_descriptions) {
+  try {
+    fileDescriptions = JSON.parse(req.body.file_descriptions);
+  } catch (error) {
+    console.error('Error parsing file_descriptions:', error);
+    fileDescriptions = [];
+  }
+}
+
+if (req.files && req.files['file_name'] && req.files['file_name'].length > 0) {
+  for (let i = 0; i < req.files['file_name'].length; i++) {
+    const file = req.files['file_name'][i];
+    const fileName = file.filename;
+    const filePath = `/uploads/${fileName}`;
+    
+    // ใช้ description จาก array ที่ส่งมา หรือใช้ default
+    const description = fileDescriptions[i] || 'Document';
+
+    const [attachmentResult] = await connection.query(
+      `INSERT INTO attachment (file_name, file_path, reference_type, reference_id, description, create_name, modify_name, create_date, modify_date)
+       VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+      [fileName, filePath, 'employee', insertedEmployeeId, description, create_name, modify_name]
+    );
+
+    allAttachmentIds.push(attachmentResult.insertId);
+    uploadedFiles.push({
+      attachment_id: attachmentResult.insertId,
+      file_name: fileName,
+      file_path: filePath,
+      description: description
+    });
+  }
+}
+
+    // Step 6: Insert contact_person1 and contact_person2
     const [insertContactPerson1] = await connection.query(
       `INSERT INTO contact_person1 (name, relationship, mobile, address)
        VALUES (?, ?, ?, ?)`,
@@ -248,13 +244,13 @@ exports.addEmployee = async (req, res) => {
     const contact_person1_id = insertContactPerson1.insertId;
     const contact_person2_id = insertContactPerson2.insertId;
 
-    // Step 7.2: Update employee with contact_person1_id and contact_person2_id
+    // Step 7: Update employee with contact_person1_id and contact_person2_id
     await connection.query(
       `UPDATE employee SET contact_person1_id = ?, contact_person2_id = ? WHERE employee_id = ?`,
       [contact_person1_id, contact_person2_id, insertedEmployeeId]
     );
 
-    // Step 7.3: Insert children data
+    // Step 8: Insert children data
     const insertedChildrenIds = [];
     if (children_data && Array.isArray(children_data) && children_data.length > 0) {
       for (const child of children_data) {
@@ -266,7 +262,7 @@ exports.addEmployee = async (req, res) => {
             [child_name, child_birthdate, insertedEmployeeId]
           );
           insertedChildrenIds.push({
-            child_id: insertChild.insertId,
+            children_id: insertChild.insertId,
             child_name: child_name,
             child_birthdate: child_birthdate
           });
@@ -274,7 +270,7 @@ exports.addEmployee = async (req, res) => {
       }
     }
 
-    // Step 7.4: Insert siblings data
+    // Step 9: Insert siblings data
     const insertedSiblingsIds = [];
     if (siblings_data && Array.isArray(siblings_data) && siblings_data.length > 0) {
       for (const sibling of siblings_data) {
@@ -296,7 +292,7 @@ exports.addEmployee = async (req, res) => {
       }
     }
 
-    // Step 7.5: Insert education history data
+    // Step 10: Insert education history data
     const insertedEducationIds = [];
     if (education_history_data && Array.isArray(education_history_data) && education_history_data.length > 0) {
       for (const education of education_history_data) {
@@ -308,7 +304,7 @@ exports.addEmployee = async (req, res) => {
             [level, field, institution, year, insertedEmployeeId]
           );
           insertedEducationIds.push({
-            education_id: insertEducation.insertId,
+            education_history_id: insertEducation.insertId,
             level: level,
             field: field,
             institution: institution,
@@ -318,14 +314,13 @@ exports.addEmployee = async (req, res) => {
       }
     }
 
-    // Step 7.6: Insert work experience data
+    // Step 11: Insert work experience data
     const insertedWorkExperienceIds = [];
-    
     if (work_experience_data && Array.isArray(work_experience_data) && work_experience_data.length > 0) {
       for (const workExp of work_experience_data) {
         const { company, position, from_date, to_date, salary, detail } = workExp;
 
-        // ➤ เพิ่ม -01 ถ้าจาก front-end ส่งมาเป็น YYYY-MM
+        // เพิ่ม -01 ถ้าจาก front-end ส่งมาเป็น YYYY-MM
         const validFromDate = from_date ? `${from_date}-01` : null;
         const validToDate = to_date ? `${to_date}-01` : null;
 
@@ -348,15 +343,7 @@ exports.addEmployee = async (req, res) => {
       }
     }
 
-    // Step 8: Update reference_id in attachments
-    for (const attachmentId of allAttachmentIds) {
-      await connection.query(
-        `UPDATE attachment SET reference_id = ? WHERE attachment_id = ?`,
-        [insertedEmployeeId, attachmentId]
-      );
-    }
-
-    // Step 9: Update employee_type name using employee name
+    // Step 12: Update employee_type name using employee name
     const [employeeTypeRows] = await connection.query(
       `SELECT name FROM employee_type WHERE employee_type_id = ?`,
       [employee_type_id]
@@ -374,18 +361,18 @@ exports.addEmployee = async (req, res) => {
     res.status(200).json({
       message: 'เพิ่มข้อมูลพนักงานสำเร็จ',
       insertedId: insertedEmployeeId,
-      profile_image_path: profileImagePath, // เพิ่มการ return profile image path
+      profile_image_path: profileImagePath,
       address_card_id: address_card_id,
       address_house_id: address_house_id,
       contact_person1_id: contact_person1_id,
       contact_person2_id: contact_person2_id,
       children_ids: insertedChildrenIds,
       siblings_ids: insertedSiblingsIds,
-      education_ids: insertedEducationIds,
+      education_history_ids: insertedEducationIds,
       work_experience_ids: insertedWorkExperienceIds,
-      main_attachment_id: finalAttachmentId,
-      all_attachment_ids: allAttachmentIds,
-      uploaded_files: uploadedFiles
+      attachment_ids: allAttachmentIds,
+      uploaded_files: uploadedFiles,
+      files_count: uploadedFiles.length
     });
 
   } catch (err) {
@@ -399,7 +386,6 @@ exports.addEmployee = async (req, res) => {
     connection.release();
   }
 };
-
 exports.updateEmployee = async (req, res) => {
  const { employee_id } = req.params;
  console.log('Received employee_id:', employee_id, 'Type:', typeof employee_id);
@@ -447,6 +433,7 @@ exports.updateEmployee = async (req, res) => {
     criminal_record,
     upcountry_areas,
     modify_name = null,
+  
     // Address card fields
     address_house_address,
     address_house_sub_district,
@@ -479,7 +466,8 @@ exports.updateEmployee = async (req, res) => {
     // Work experience data - array of objects with work experience info
     work_experience_data = [],
     father_age,
-    mother_age
+    mother_age,
+    age
   } = req.body;
 
   const connection = await pool.getConnection();
@@ -583,7 +571,7 @@ exports.updateEmployee = async (req, res) => {
         spouse_name = ?, spouse_birthdate = ?, spouse_occupation = ?,
         total_siblings = ?, order_of_siblings = ?, total_children = ?, total_boys = ?, total_girls = ?,
         language_speaking = ?, language_reading = ?, language_writing = ?,
-        criminal_record = ?, upcountry_areas = ?, employee_type_id = ?, father_age = ?, mother_age = ?
+        criminal_record = ?, upcountry_areas = ?, employee_type_id = ?, father_age = ?, mother_age = ?, age = ?
        WHERE employee_id = ?`,
       [
         first_name, last_name, nickname, profileImagePath, mobile_no, birth_date, gender,
@@ -597,6 +585,7 @@ exports.updateEmployee = async (req, res) => {
         total_siblings, order_of_siblings, total_children, total_boys, total_girls,
         language_speaking, language_reading, language_writing,
         criminal_record, upcountry_areas, employee_type_id, father_age, mother_age,
+        age,
         employee_id
       ]
     );
@@ -632,7 +621,7 @@ exports.updateEmployee = async (req, res) => {
             [child_name, child_birthdate, employee_id]
           );
           insertedChildrenIds.push({
-            child_id: insertChild.insertId,
+            children_id: insertChild.insertId,
             child_name: child_name,
             child_birthdate: child_birthdate
           });
@@ -678,7 +667,7 @@ exports.updateEmployee = async (req, res) => {
             [level, field, institution, year, employee_id]
           );
           insertedEducationIds.push({
-            education_id: insertEducation.insertId,
+            education_history_id : insertEducation.insertId,
             level: level,
             field: field,
             institution: institution,
@@ -746,7 +735,7 @@ exports.updateEmployee = async (req, res) => {
       contact_person2_id: existingEmployee.contact_person2_id,
       children_ids: insertedChildrenIds,
       siblings_ids: insertedSiblingsIds,
-      education_ids: insertedEducationIds,
+      education_history_ids: insertedEducationIds,
       work_experience_ids: insertedWorkExperienceIds,
       uploaded_files: uploadedFiles
     });
@@ -824,13 +813,16 @@ exports.getAllEmployees = async (req, res) => {
         cp2.name AS cp2_name,
         cp2.relationship AS cp2_relationship,
         cp2.mobile AS cp2_mobile,
-        cp2.address AS cp2_address
+        cp2.address AS cp2_address,
+
+        et.name AS employee_type_name
 
       FROM employee e
       LEFT JOIN address_house ah ON e.address_house_id = ah.address_house_id
       LEFT JOIN address_card ac ON e.address_card_id = ac.address_card_id
       LEFT JOIN contact_person1 cp1 ON e.contact_person1_id = cp1.contact_person1_id
       LEFT JOIN contact_person2 cp2 ON e.contact_person2_id = cp2.contact_person2_id
+      LEFT JOIN employee_type et ON e.employee_type_id = et.employee_type_id
       ${whereClause}
       ORDER BY ${sort_by} ${order}
       LIMIT ? OFFSET ?
@@ -842,6 +834,7 @@ exports.getAllEmployees = async (req, res) => {
     const countQuery = `
       SELECT COUNT(*) AS total
       FROM employee e
+      LEFT JOIN employee_type et ON e.employee_type_id = et.employee_type_id
       ${whereClause}
     `;
     const [countResult] = await conn.query(countQuery, params);
@@ -897,7 +890,7 @@ exports.getAllEmployees = async (req, res) => {
 
       employee_type: {
         employee_type_id: e.employee_type_id,
-        // ตัดชื่อ employee_type_name ออก เพราะไม่ได้ join ตารางนั้นแล้ว
+        employee_type_name: e.employee_type_name,
       },
 
       address_house: {
@@ -905,7 +898,7 @@ exports.getAllEmployees = async (req, res) => {
         sub_district: e.house_sub_district,
         district: e.house_district,
         province: e.house_province,
-        postal_code: e.postal_code,
+        postal_code: e.house_postal_code,
       },
 
       address_card: {
@@ -913,7 +906,7 @@ exports.getAllEmployees = async (req, res) => {
         sub_district: e.card_sub_district,
         district: e.card_district,
         province: e.card_province,
-        postal_code: e.postal_code,
+        postal_code: e.card_postal_code,
       },
 
       contact_person1: {
@@ -957,21 +950,23 @@ exports.getEmployeeById = async (req, res) => {
   try {
     const { id } = req.params;
 
+    // ดึงข้อมูลพนักงานหลักพร้อมกับ address, contact person, และ employee_type
     const [rows] = await conn.query(`
       SELECT 
         e.*,
+        et.name AS employee_type_name,
+        
+        ah.address AS address_house_address,
+        ah.sub_district AS address_house_sub_district,
+        ah.district AS address_house_district,
+        ah.province AS address_house_province,
+        ah.postal_code AS address_house_postal_code,
 
-        ah.address AS house_address,
-        ah.sub_district AS house_sub_district,
-        ah.district AS house_district,
-        ah.province AS house_province,
-        ah.postal_code AS house_postal_code,
-
-        ac.address AS card_address,
-        ac.sub_district AS card_sub_district,
-        ac.district AS card_district,
-        ac.province AS card_province,
-        ac.postal_code AS card_postal_code,
+        ac.address AS address_card_address,
+        ac.sub_district AS address_card_sub_district,
+        ac.district AS address_card_district,
+        ac.province AS address_card_province,
+        ac.postal_code AS address_card_postal_code,
 
         cp1.name AS cp1_name,
         cp1.relationship AS cp1_relationship,
@@ -984,6 +979,7 @@ exports.getEmployeeById = async (req, res) => {
         cp2.address AS cp2_address
 
       FROM employee e
+      LEFT JOIN employee_type et ON e.employee_type_id = et.employee_type_id
       LEFT JOIN address_house ah ON e.address_house_id = ah.address_house_id
       LEFT JOIN address_card ac ON e.address_card_id = ac.address_card_id
       LEFT JOIN contact_person1 cp1 ON e.contact_person1_id = cp1.contact_person1_id
@@ -994,6 +990,46 @@ exports.getEmployeeById = async (req, res) => {
     if (rows.length === 0) {
       return res.status(404).json({ message: "Employee not found" });
     }
+
+    // ดึงข้อมูลลูก (children)
+    const [childrenRows] = await conn.query(`
+      SELECT children_id, child_name, child_birthdate
+      FROM children
+      WHERE employee_id = ?
+      ORDER BY children_id
+    `, [id]);
+
+    // ดึงข้อมูลพี่น้อง (siblings)
+    const [siblingsRows] = await conn.query(`
+      SELECT siblings_id, siblings_name, siblings_birthdate, siblings_mobile, siblings_occupation
+      FROM siblings
+      WHERE employee_id = ?
+      ORDER BY siblings_id
+    `, [id]);
+
+    // ดึงข้อมูลประวัติการศึกษา (education_history)
+    const [educationRows] = await conn.query(`
+      SELECT education_history_id , level, field, institution, year
+      FROM education_history
+      WHERE employee_id = ?
+      ORDER BY year DESC
+    `, [id]);
+
+    // ดึงข้อมูลประสบการณ์การทำงาน (work_experience)
+    const [workExpRows] = await conn.query(`
+      SELECT work_experience_id, company, position, from_date, to_date, salary, detail
+      FROM work_experience
+      WHERE employee_id = ?
+      ORDER BY from_date DESC
+    `, [id]);
+
+    // ดึงข้อมูลไฟล์แนบ (attachments)
+    const [attachmentRows] = await conn.query(`
+      SELECT attachment_id, file_name, file_path, reference_type, create_date, modify_date
+      FROM attachment
+      WHERE reference_id = ? AND reference_type = 'employee'
+      ORDER BY attachment_id
+    `, [id]);
 
     const e = rows[0];
     const data = {
@@ -1024,9 +1060,12 @@ exports.getEmployeeById = async (req, res) => {
       father_name: e.father_name,
       father_birthdate: e.father_birthdate,
       father_occupation: e.father_occupation,
+      father_age: e.father_age,
+   
       mother_name: e.mother_name,
       mother_birthdate: e.mother_birthdate,
       mother_occupation: e.mother_occupation,
+      mother_age: e.mother_age,
       spouse_name: e.spouse_name,
       spouse_birthdate: e.spouse_birthdate,
       spouse_occupation: e.spouse_occupation,
@@ -1040,24 +1079,29 @@ exports.getEmployeeById = async (req, res) => {
       language_writing: e.language_writing,
       criminal_record: e.criminal_record,
       upcountry_areas: e.upcountry_areas,
+      employee_type_id: e.employee_type_id,
+      employee_type_name: e.employee_type_name,
+      attachment_id: e.attachment_id,
 
-      address_house: {
-        address: e.house_address,
-        sub_district: e.house_sub_district,
-        district: e.house_district,
-        province: e.house_province,
-        postal_code: e.house_postal_code,
-      },
+      // Address House fields
+      address_house_id: e.address_house_id,
+      address_house_address: e.address_house_address,
+      address_house_sub_district: e.address_house_sub_district,
+      address_house_district: e.address_house_district,
+      address_house_province: e.address_house_province,
+      address_house_postal_code: e.address_house_postal_code,
 
-      address_card: {
-        address: e.card_address,
-        sub_district: e.card_sub_district,
-        district: e.card_district,
-        province: e.card_province,
-        postal_code: e.card_postal_code,
-      },
+      // Address Card fields
+      address_card_id: e.address_card_id,
+      address_card_address: e.address_card_address,
+      address_card_sub_district: e.address_card_sub_district,
+      address_card_district: e.address_card_district,
+      address_card_province: e.address_card_province,
+      address_card_postal_code: e.address_card_postal_code,
+      age:e.age,
 
       contact_person1: {
+        contact_person1_id: e.contact_person1_id,
         name: e.cp1_name,
         relationship: e.cp1_relationship,
         mobile: e.cp1_mobile,
@@ -1065,11 +1109,58 @@ exports.getEmployeeById = async (req, res) => {
       },
 
       contact_person2: {
+        contact_person2_id: e.contact_person2_id,
         name: e.cp2_name,
         relationship: e.cp2_relationship,
         mobile: e.cp2_mobile,
         address: e.cp2_address,
       },
+
+      // ข้อมูลลูก
+      children_data: childrenRows.map(child => ({
+        children_id: child.children_id,
+        child_name: child.child_name,
+        child_birthdate: child.child_birthdate
+      })),
+
+      // ข้อมูลพี่น้อง
+      siblings_data: siblingsRows.map(sibling => ({
+        siblings_id: sibling.siblings_id,
+        siblings_name: sibling.siblings_name,
+        siblings_birthdate: sibling.siblings_birthdate,
+        siblings_mobile: sibling.siblings_mobile,
+        siblings_occupation: sibling.siblings_occupation
+      })),
+
+      // ข้อมูลประวัติการศึกษา
+      education_history_data: educationRows.map(education => ({
+        education_history_id : education.education_history_id ,
+        level: education.level,
+        field: education.field,
+        institution: education.institution,
+        year: education.year
+      })),
+
+      // ข้อมูลประสบการณ์การทำงาน
+      work_experience_data: workExpRows.map(workExp => ({
+        work_experience_id: workExp.work_experience_id,
+        company: workExp.company,
+        position: workExp.position,
+        from_date: workExp.from_date,
+        to_date: workExp.to_date,
+        salary: workExp.salary,
+        detail: workExp.detail
+      })),
+
+      // ข้อมูลไฟล์แนบ
+      attachments: attachmentRows.map(attachment => ({
+        attachment_id: attachment.attachment_id,
+        file_name: attachment.file_name,
+        file_path: attachment.file_path,
+        reference_type: attachment.reference_type,
+        create_date: attachment.create_date,
+        modify_date: attachment.modify_date
+      }))
     };
 
     res.status(200).json(data);

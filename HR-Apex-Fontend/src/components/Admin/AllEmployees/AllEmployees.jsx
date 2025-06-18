@@ -78,7 +78,7 @@ const AllEmployees = () => {
           Email: emp.email_person,
           MobileNumber: emp.mobile_no,
           Position: emp.position,
-          Type: emp.employee_type?.name || 'N/A',
+Type: emp.employee_type?.employee_type_name || 'N/A',
           Status: emp.status_employee || 'Unknown',
           ImageUrl: emp.pic_path
             ? `http://localhost:5000${emp.pic_path}`
@@ -323,7 +323,7 @@ const AllEmployees = () => {
                   />
                 </div>
                 <div className="action-buttons">
-                  <button className="add-employee-btn" onClick={() => navigate('/new-employee')}>
+                  <button className="add-employee-btn" onClick={() => navigate('/admin/new-employee')}>
                     <FiPlus />
                     <span>Add Employee</span>
                   </button>
@@ -442,10 +442,10 @@ const AllEmployees = () => {
                         </span>
                       </td>
                       <td className="actions">
-                        <button onClick={() => navigate(`/employee/${employee.EmployeeId}`)}>
+                        <button onClick={() => navigate(`/admin/employee/${employee.EmployeeId}`)}>
                           <FiEye />
                         </button>
-                        <button onClick={() => navigate(`/employee/${employee.EmployeeId}?edit=true`)}>
+                        <button onClick={() => navigate(`/admin/employee/${employee.EmployeeId}?edit=true`)}>
                           <FiEdit2 />
                         </button>
                         <button onClick={() => handleDeleteClick(employee)}>
@@ -520,7 +520,7 @@ const AllEmployees = () => {
       {isMobile && (
         <button 
           className="floating-add-btn" 
-          onClick={() => navigate('/new-employee')} 
+          onClick={() => navigate('/admin/new-employee')} 
           aria-label="Add Employee"
         >
           <FiPlus size={28} />

@@ -14,6 +14,8 @@ const employeeRoutes = require('./routes/employeeRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./swagger.js'); // นำเข้าจากข้อ 2
+const disbursementRoutes = require('./controllers/disbursementController');
+
 
 // Load environment variables
 dotenv.config();
@@ -54,6 +56,8 @@ app.use("/api/otp", otpRoutes);
 app.use('/public', express.static('public')); 
 app.use('/api/employee', employeeRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/disbursement', disbursementRoutes);
+
 
 
 

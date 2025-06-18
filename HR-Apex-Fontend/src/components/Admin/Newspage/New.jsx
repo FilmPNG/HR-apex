@@ -85,6 +85,12 @@ function New() {
     { value: 'IT', label: 'IT' }
   ];
 
+
+
+  function sanitizeFilename(filename) {
+  return filename.replace(/[\\/:*?"<>|]/g, '_');
+  }
+
   useEffect(() => {
     fetchNews();
   }, []);
@@ -306,7 +312,7 @@ function New() {
   );
 
   const handleAddNews = () => {
-    navigate('/addnews');
+    navigate('/admin/addnews');
   };
 
   const handleView = (item) => {
@@ -793,7 +799,8 @@ function New() {
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = selectedItem.Attachment || 'download';
+        const filename = selectedItem.Attachment ?  sanitizeFilename(selectedItem.Attachment) : 'download';
+        link.download = filename;
         link.style.display = 'none';
         document.body.appendChild(link);
         link.click();

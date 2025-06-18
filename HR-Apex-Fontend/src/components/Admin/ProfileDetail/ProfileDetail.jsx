@@ -33,91 +33,299 @@ const ProfileDetail = () => {
   const toggleSideMenu = () => {
     setIsSideMenuOpen(!isSideMenuOpen);
   };
+const formatDateForInput = (dateString) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return ""; // Invalid date
+  return date.toISOString().split('T')[0]; // Returns YYYY-MM-DD
+};
 
+// Helper function to calculate age from birthdate
+const getAgeFromDate = (birthdate) => {
+  if (!birthdate) return "";
+  const today = new Date();
+  const birth = new Date(birthdate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age.toString();
+};
+const formatMonthYear = (dateString) => {
+  if (!dateString) return '-';
+  
+  try {
+    const [year, month] = dateString.split('-');
+    if (!year || !month) return dateString;
+    
+    const monthNames = [
+      'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+      'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+    ];
+    
+    const monthIndex = parseInt(month) - 1;
+    const monthName = monthNames[monthIndex];
+    const thaiYear = parseInt(year) + 543; // แปลงเป็น พ.ศ.
+    
+    return `${monthName} ${thaiYear}`;
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return dateString; // return ค่าเดิมถ้าแปลงไม่ได้
+  }
+};
+const formatDateForMonthInput = (dateString) => {
+  if (!dateString) return '';
+  
+  try {
+    // กรณี date string เป็น full date เช่น "2023-03-15" หรือ "2023-03-01"
+    if (dateString.includes('-') && dateString.split('-').length === 3) {
+      const [year, month] = dateString.split('-');
+      return `${year}-${month.padStart(2, '0')}`;
+    }
+    
+    // กรณี date string เป็น "2023-03" อยู่แล้ว
+    if (dateString.includes('-') && dateString.split('-').length === 2) {
+      const [year, month] = dateString.split('-');
+      return `${year}-${month.padStart(2, '0')}`;
+    }
+    
+    // กรณี date เป็น Date object
+    if (dateString instanceof Date) {
+      const year = dateString.getFullYear();
+      const month = (dateString.getMonth() + 1).toString().padStart(2, '0');
+      return `${year}-${month}`;
+    }
+    
+    // กรณี timestamp
+    if (!isNaN(dateString)) {
+      const date = new Date(parseInt(dateString));
+      const year = date.getFullYear();
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      return `${year}-${month}`;
+    }
+    
+    return '';
+  } catch (error) {
+    console.error('Error formatting date for month input:', error);
+    return '';
+  }
+};
+
+// 2. ฟังก์ชันแปลงกลับจาก month input เป็นรูปแบบที่ backend ต้องการ
+const formatMonthInputForSave = (monthValue) => {
+  if (!monthValue) return null;
+  
+  // monthValue จะได้รูปแบบ "2023-03"
+  // อาจจะต้องแปลงเป็น full date เช่น "2023-03-01" ขึ้นกับ backend
+  return `${monthValue}-01`; // หรือ return monthValue; ถ้า backend รับแค่ YYYY-MM
+};
+
+
+// หรือถ้าต้องการแบบสั้นๆ
+const formatMonthYearShort = (dateString) => {
+  if (!dateString) return '-';
+  
+  const [year, month] = dateString.split('-');
+  if (!year || !month) return dateString;
+  
+  const monthNames = [
+    'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.',
+    'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'
+  ];
+  
+  const monthName = monthNames[parseInt(month) - 1];
+  const thaiYear = parseInt(year) + 543;
+  
+  return `${monthName} ${thaiYear}`;
+};
+
+// วิธีแบบง่ายๆ ใช้ JavaScript built-in
+const formatSimpleMonthYear = (dateString) => {
+  if (!dateString) return '-';
+  
+  const date = new Date(dateString + '-01');
+  if (isNaN(date.getTime())) return dateString;
+  
+  return date.toLocaleDateString('th-TH', { 
+    year: 'numeric', 
+    month: 'long' 
+  });
+};
+// Helper function to format date for display (DD/MM/YYYY)
+const formatDateForDisplay = (dateString) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "";
+  return date.toLocaleDateString('th-TH', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  });
+};
   useEffect(() => {
+    
   const fetchEmployeeData = async () => {
     try {
       const response = await axios.get(`http://localhost:5000/api/employee/${id}`);
       const emp = response.data;
 
       const formattedData = {
-        EmployeeId: emp.employee_id,
-        FName: emp.first_name,
-        LName: emp.last_name,
-        Nickname: emp.nickname,
-        Email: emp.email_person,
-        MobileNumber: emp.mobile_no,
-        Position: emp.position,
-        Department: "N/A",
-        Type: emp.employee_type?.name || "N/A",
-        Status: emp.status_employee || "Inactive",
-        ImageUrl: emp.pic_path
-          ? `http://localhost:5000${emp.pic_path}`
-          : `https://ui-avatars.com/api/?name=${emp.first_name}+${emp.last_name}&background=random&rounded=true`,
-        DateOfBirth: emp.birth_date,
-        Gender: emp.gender,
-        Nationality: emp.nationality || "",
-        MaritalStatus: emp.marital_status,
-        Religion: emp.religion || "",
+  EmployeeId: emp.employee_id,
+  FName: emp.first_name,
+  LName: emp.last_name,
+  Nickname: emp.nickname,
+  Email: emp.email_person,
+  MobileNumber: emp.mobile_no,
+  Position: emp.position,
+  Department: "N/A",
+  age:emp.age,
+  Type: emp.employee_type_id || "N/A",
+  Status: emp.status_employee || "Inactive",
+  ImageUrl: emp.pic_path
+    ? `http://localhost:5000${emp.pic_path}`
+    : `https://ui-avatars.com/api/?name=${emp.first_name}+${emp.last_name}&background=random&rounded=true`,
+  
+  // ✅ แปลงวันที่ให้อยู่ในรูปแบบที่ HTML input รับได้
+  DateOfBirth: formatDateForInput(emp.birth_date),
+  DateOfBirthDisplay: formatDateForDisplay(emp.birth_date), // สำหรับแสดงผล
+  
+  Gender: emp.gender,
+  Nationality: emp.nationality || "",
+  MaritalStatus: emp.marital_status,
+  Religion: emp.religion || "",
 
-        // ✅ ดึงจาก address_house
-        Address: emp.address_house?.address || "",
-        City: emp.address_house?.district || "",
-        State: emp.address_house?.province || "",
-        ZIPCode: emp.address_house?.postal_code || "",
+  // ✅ ดึงจาก address_house
+  Address: emp.address_house_address || "",
+  City: emp.address_house_district|| "",
+  State: emp.address_house_province || "",
+  ZIPCode: emp.address_house_postal_code || "",
 
-        BankName: emp.bank_name,
-        AccountNumber: emp.account_number,
-        AccountHolderName: emp.account_name,
-        Salary: emp.salary,
-        StartDate: emp.start_date,
-        Username: "",
-        Role: "",
-        experience: emp.experience || [],
-        education: emp.education || [],
+  // ✅ ข้อมูลที่อยู่ตามบัตรประชาชน
+  CardAddress: emp.address_card_address || "",
+  CardCity: emp.address_card_district|| "",
+  CardState: emp.adaddress_card_sub_district || "",
+  CardZIPCode: emp.address_card_postal_code|| "",
+
+  BankName: emp.bank_name,
+  AccountNumber: emp.account_number,
+  AccountHolderName: emp.account_name,
+  Salary: emp.salary,
+  
+  // ✅ แปลงวันที่เริ่มงานและวันสิ้นสุดทดลองงาน
+  StartDate: formatDateForInput(emp.start_date),
+  StartDateDisplay: formatDateForDisplay(emp.start_date),
 
 
-        // ✅ เพิ่มข้อมูลครอบครัว
-        FatherName: emp.father_name || "",
-        FatherOccupation: emp.father_occupation || "",
-        FatherAge: emp.father_birthdate ? getAgeFromDate(emp.father_birthdate) : "",
 
-        MotherName: emp.mother_name || "",
-        MotherOccupation: emp.mother_occupation || "",
-        MotherAge: emp.mother_birthdate ? getAgeFromDate(emp.mother_birthdate) : "",
+  LineId: emp.line_id,
 
-        SpouseName: emp.spouse_name || "",
-        SpouseOccupation: emp.spouse_occupation || "",
-        SpouseAge: emp.spouse_birthdate ? getAgeFromDate(emp.spouse_birthdate) : "",
+  Username: "",
+  Role: "",
+  
+  // ✅ ประสบการณ์การทำงานและการศึกษา
+  experience: emp.work_experience_data?.map(exp => ({
+    work_experience_id: exp.work_experience_id,
+    company: exp.company,
+    position: exp.position,
+    from_date: formatDateForInput(exp.from_date),
+    from_date_display: formatDateForDisplay(exp.from_date),
+    to_date: formatDateForInput(exp.to_date),
+    to_date_display: formatDateForDisplay(exp.to_date),
+    salary: exp.salary,
+    detail: exp.detail
+  })) || [],
+  
+  education: emp.education_history_data?.map(edu => ({
+    education_id: edu.education_id,
+    level: edu.level,
+    field: edu.field,
+    institution: edu.institution,
+    year: edu.year
+  })) || [],
 
-        TotalSiblings: emp.total_siblings || 0,
-        BirthOrder: emp.order_of_siblings || 1,
-        NumberOfChildren: emp.total_children || 0,
-        NumberOfBrothers: emp.total_boys || 0,
-        NumberOfSisters: emp.total_girls || 0,
+  // ✅ ข้อมูลลูกและพี่น้อง
+  children: emp.children_data?.map(child => ({
+    child_id: child.child_id,
+    child_name: child.child_name,
+    child_birthdate: formatDateForInput(child.child_birthdate),
+    child_birthdate_display: formatDateForDisplay(child.child_birthdate)
+  })) || [],
 
-        speaking: emp.language_speaking || '',
-        writing: emp.language_writing || '',
-        reading: emp.language_reading || '',
+  siblings: emp.siblings_data?.map(sibling => ({
+    siblings_id: sibling.siblings_id,
+    siblings_name: sibling.siblings_name,
+    siblings_birthdate: formatDateForInput(sibling.siblings_birthdate),
+    siblings_birthdate_display: formatDateForDisplay(sibling.siblings_birthdate),
+    siblings_mobile: sibling.siblings_mobile,
+    siblings_occupation: sibling.siblings_occupation
+  })) || [],
 
-        hasCriminalRecord: emp.criminal_record || '',
-        criminalDetails: emp.criminal_record_detail || '',
-        emergencyContactName1: emp.contact_person1?.name || '',
-        emergencyContactRelation1: emp.contact_person1?.relationship || '',
-        emergencyContactPhone1: emp.contact_person1?.mobile || '',
-        emergencyContactAddress1: emp.contact_person1?.address || '',
+  // ✅ ไฟล์แนบ
+  attachments: emp.attachments?.map(attachment => ({
+    attachment_id: attachment.attachment_id,
+    file_name: attachment.file_name,
+    file_path: attachment.file_path ? `http://localhost:5000${attachment.file_path}` : "",
+    create_date: formatDateForDisplay(attachment.create_date),
+    modify_date: formatDateForDisplay(attachment.modify_date)
+  })) || [],
 
-        emergencyContactName2: emp.contact_person2?.name || '',
-        emergencyContactRelation2: emp.contact_person2?.relationship || '',
-        emergencyContactPhone2: emp.contact_person2?.mobile || '',
-        emergencyContactAddress2: emp.contact_person2?.address || '',
-        canRelocate: emp.upcountry_areas || '',
+  // ✅ เพิ่มข้อมูลครอบครัว
+  FatherName: emp.father_name || "",
+  FatherOccupation: emp.father_occupation || "",
+  FatherAge: emp.father_age || (emp.father_birthdate ? getAgeFromDate(emp.father_birthdate) : ""),
+  FatherBirthdate: formatDateForInput(emp.father_birthdate),
+  FatherBirthdateDisplay: formatDateForDisplay(emp.father_birthdate),
 
-        
+  MotherName: emp.mother_name || "",
+  MotherOccupation: emp.mother_occupation || "",
+  MotherAge: emp.mother_age || (emp.mother_birthdate ? getAgeFromDate(emp.mother_birthdate) : ""),
+  MotherBirthdate: formatDateForInput(emp.mother_birthdate),
+  MotherBirthdateDisplay: formatDateForDisplay(emp.mother_birthdate),
 
-       
-      };
+  SpouseName: emp.spouse_name || "",
+  SpouseOccupation: emp.spouse_occupation || "",
+  SpouseAge: emp.spouse_birthdate ? getAgeFromDate(emp.spouse_birthdate) : "",
+  SpouseBirthdate: formatDateForInput(emp.spouse_birthdate),
+  SpouseBirthdateDisplay: formatDateForDisplay(emp.spouse_birthdate),
 
+  TotalSiblings: emp.total_siblings || 0,
+  BirthOrder: emp.order_of_siblings || 1,
+  NumberOfChildren: emp.total_children || 0,
+  NumberOfBrothers: emp.total_boys || 0,
+  NumberOfSisters: emp.total_girls || 0,
+
+  // ✅ ความสามารถทางภาษา
+  speaking: emp.language_speaking || '',
+  writing: emp.language_writing || '',
+  reading: emp.language_reading || '',
+
+  // ✅ ประวัติอาชญากรรม
+  hasCriminalRecord: emp.criminal_record || '',
+  criminalDetails: emp.criminal_record_detail || '',
+
+  // ✅ ผู้ติดต่อฉุกเฉิน
+  emergencyContactName1: emp.contact_person1.name || '',
+  emergencyContactRelation1: emp.contact_person1.relationship || '',
+  emergencyContactPhone1: emp.contact_person1.mobile || '',
+  emergencyContactAddress1: emp.contact_person1.address || '',
+
+  emergencyContactName2: emp.contact_person2.name || '',
+  emergencyContactRelation2: emp.contact_person2.relationship || '',
+  emergencyContactPhone2: emp.contact_person2.mobile || '',
+  emergencyContactAddress2: emp.contact_person2.address || '',
+
+  // ✅ ความสามารถในการย้ายภูมิลำเนา
+  canRelocate: emp.upcountry_areas || '',
+
+  // ✅ IDs สำหรับการอัปเดต
+  employee_type_id: emp.employee_type_id,
+  attachment_id: emp.attachment_id,
+  address_house_id: emp.address_house?.address_house_id,
+  address_card_id: emp.address_card?.address_card_id,
+  contact_person1_id: emp.contact_person1?.contact_person1_id,
+  contact_person2_id: emp.contact_person2?.contact_person2_id
+};
       setEmployeeData(formattedData);
       setEditData(formattedData);
 
@@ -155,17 +363,7 @@ const ProfileDetail = () => {
   };
 
 
-  const getAgeFromDate = (birthDate) => {
-    const today = new Date();
-    const birth = new Date(birthDate);
-    let age = today.getFullYear() - birth.getFullYear();
-    const m = today.getMonth() - birth.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
-      age--;
-    }
-    return age;
-  };
-
+  
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -189,87 +387,148 @@ const ProfileDetail = () => {
 const handleConfirmSave = async () => {
   try {
     // Prepare the data payload to match your API structure
-    const updatePayload = {
-      employee_id: editData.EmployeeId,
-      first_name: editData.FName,
-      last_name: editData.LName,
-      nickname: editData.Nickname,
-      email_person: editData.Email,
-      mobile_no: editData.MobileNumber,
-      position: editData.Position,
-      employee_type: { name: editData.Type },
-      status_employee: editData.Status,
-      birth_date: editData.DateOfBirth,
-      gender: editData.Gender,
-      nationality: editData.Nationality,
-      marital_status: editData.MaritalStatus,
-      religion: editData.Religion,
-      
-      // Address information
-      address_house: {
-        address: editData.Address,
-        district: editData.City,
-        province: editData.State,
-        postal_code: editData.ZIPCode
-      },
-      
-      // Bank information
-      bank_name: editData.BankName,
-      account_number: editData.AccountNumber,
-      account_name: editData.AccountHolderName,
-      salary: editData.Salary,
-      start_date: editData.StartDate,
-      
-      // Experience and Education arrays
-      experience: editData.experience,
-      education: editData.education,
-      
-      // Family information
-      father_name: editData.FatherName,
-      father_occupation: editData.FatherOccupation,
-      father_birthdate: editData.FatherAge ? calculateBirthDate(editData.FatherAge) : null,
-      
-      mother_name: editData.MotherName,
-      mother_occupation: editData.MotherOccupation,
-      mother_birthdate: editData.MotherAge ? calculateBirthDate(editData.MotherAge) : null,
-      
-      spouse_name: editData.SpouseName,
-      spouse_occupation: editData.SpouseOccupation,
-      spouse_birthdate: editData.SpouseAge ? calculateBirthDate(editData.SpouseAge) : null,
-      
-      total_siblings: editData.TotalSiblings,
-      order_of_siblings: editData.BirthOrder,
-      total_children: editData.NumberOfChildren,
-      total_boys: editData.NumberOfBrothers,
-      total_girls: editData.NumberOfSisters,
-      
-      // Language skills
-      language_speaking: editData.speaking,
-      language_writing: editData.writing,
-      language_reading: editData.reading,
-      
-      // Criminal record
-      criminal_record: editData.hasCriminalRecord,
-      criminal_record_detail: editData.criminalDetails,
-      
-      // Emergency contacts
-      contact_person1: {
-        name: editData.emergencyContactName1,
-        relationship: editData.emergencyContactRelation1,
-        mobile: editData.emergencyContactPhone1,
-        address: editData.emergencyContactAddress1
-      },
-      
-      contact_person2: {
-        name: editData.emergencyContactName2,
-        relationship: editData.emergencyContactRelation2,
-        mobile: editData.emergencyContactPhone2,
-        address: editData.emergencyContactAddress2
-      },
-      
-      upcountry_areas: editData.canRelocate
-    };
+   
+const updatePayload = {
+  employee_id: editData.EmployeeId,
+  first_name: editData.FName,
+  last_name: editData.LName,
+  nickname: editData.Nickname,
+  email_person: editData.Email,
+  mobile_no: editData.MobileNumber,
+  position: editData.Position,
+  employee_type: { name: editData.Type },
+  status_employee: editData.Status,
+  birth_date: editData.DateOfBirth,
+  gender: editData.Gender,
+  nationality: editData.Nationality,
+  marital_status: editData.MaritalStatus,
+  religion: editData.Religion,
+  age:editData.age,
+  
+ 
+    address_house_id: editData.address_house_id, // เพิ่ม ID สำหรับการอัปเดต
+    address_house_address: editData.Address,
+    address_house_district: editData.City,
+    address_house_province: editData.State,
+    address_house_postal_code: editData.ZIPCode,
+  
+  
+  // ✅ ข้อมูลที่อยู่ตามบัตรประชาชน
 
+    address_card_id: editData.address_card_id, // เพิ่ม ID สำหรับการอัปเดต
+   address_card_address: editData.CardAddress,
+    address_card_district: editData.CardCity,
+    address_card_sub_district: editData.CardState,
+    address_card_postal_code: editData.CardZIPCode,
+
+  
+  // ✅ ข้อมูลธนาคาร
+  bank_name: editData.BankName,
+  account_number: editData.AccountNumber,
+  account_name: editData.AccountHolderName,
+  salary: editData.Salary,
+  
+  // ✅ วันที่เริ่มงานและทดลองงาน
+  start_date: editData.StartDate,
+
+  
+ 
+  line_id: editData.LineId,
+  
+  // ✅ ประสบการณ์การทำงาน
+  work_experience_data: editData.experience?.map(exp => ({
+    work_experience_id: exp.work_experience_id,
+    company: exp.company,
+    position: exp.position,
+    from_date: exp.from_date,
+    to_date: exp.to_date,
+    salary: exp.salary,
+    detail: exp.detail
+  })) || [],
+  
+  // ✅ ข้อมูลการศึกษา
+  education_history_data: editData.education?.map(edu => ({
+    education_id: edu.education_id,
+    level: edu.level,
+    field: edu.field,
+    institution: edu.institution,
+    year: edu.year
+  })) || [],
+  
+  // ✅ ข้อมูลลูก
+  children_data: editData.children?.map(child => ({
+    child_id: child.child_id,
+    child_name: child.child_name,
+    child_birthdate: child.child_birthdate
+  })) || [],
+  
+  // ✅ ข้อมูลพี่น้อง
+  siblings_data: editData.siblings?.map(sibling => ({
+    siblings_id: sibling.siblings_id,
+    siblings_name: sibling.siblings_name,
+    siblings_birthdate: sibling.siblings_birthdate,
+    siblings_mobile: sibling.siblings_mobile,
+    siblings_occupation: sibling.siblings_occupation
+  })) || [],
+  
+  // ✅ ข้อมูลครอบครัว - พ่อ
+  father_name: editData.FatherName,
+  father_occupation: editData.FatherOccupation,
+  father_age: editData.FatherAge,
+  father_birthdate: editData.FatherBirthdate, // ใช้ birthdate แทน age
+  
+  // ✅ ข้อมูลครอบครัว - แม่
+  mother_name: editData.MotherName,
+  mother_occupation: editData.MotherOccupation,
+  mother_age: editData.MotherAge,
+  mother_birthdate: editData.MotherBirthdate, // ใช้ birthdate แทน age
+  
+  // ✅ ข้อมูลคู่สมรส
+  spouse_name: editData.SpouseName,
+  spouse_occupation: editData.SpouseOccupation,
+  spouse_birthdate: editData.SpouseBirthdate, // ใช้ birthdate แทน age
+  
+  // ✅ ข้อมูลพี่น้องและลูก
+  total_siblings: editData.TotalSiblings,
+  order_of_siblings: editData.BirthOrder,
+  total_children: editData.NumberOfChildren,
+  total_boys: editData.NumberOfBrothers,
+  total_girls: editData.NumberOfSisters,
+  
+  // ✅ ความสามารถทางภาษา
+  language_speaking: editData.speaking,
+  language_writing: editData.writing,
+  language_reading: editData.reading,
+  
+  // ✅ ประวัติอาชญากรรม
+  criminal_record: editData.hasCriminalRecord,
+  criminal_record_detail: editData.criminalDetails,
+  
+  // ✅ ผู้ติดต่อฉุกเฉิน
+ 
+  contact_person1_id: editData.contact_person1_id, // เพิ่ม ID สำหรับการอัปเดต
+    contact_person1_name: editData.emergencyContactName1,
+    contact_person1_relationship: editData.emergencyContactRelation1,
+    contact_person1_mobile: editData.emergencyContactPhone1,
+    contact_person1_address: editData.emergencyContactAddress1,
+    contact_person2_id: editData.contact_person2_id, // เพิ่ม ID สำหรับการอัปเดต
+    contact_person2_name: editData.emergencyContactName2,
+    contact_person2_relationship: editData.emergencyContactRelation2,
+    contact_person2_mobile: editData.emergencyContactPhone2,
+    contact_person2_address: editData.emergencyContactAddress2
+,
+  
+  // ✅ ความสามารถในการย้ายภูมิลำเนา
+  upcountry_areas: editData.canRelocate,
+
+  
+  // ✅ ไฟล์แนบ (ถ้ามีการอัปเดต)
+  attachments: editData.attachments || [],
+  
+  // ✅ IDs สำหรับการอัปเดต
+  employee_type_id: editData.employee_type_id,
+  attachment_id: editData.attachment_id
+};
     // Make the API call
     const response = await axios.patch(
       `http://localhost:5000/api/employee/${editData.EmployeeId}`,
@@ -329,7 +588,7 @@ const calculateBirthDate = (age) => {
   const handleAddExperience = () => {
     setEditData(prev => ({
       ...prev,
-      experience: prev.experience ? [...prev.experience, { company: '', position: '', fromDate: '', toDate: '', salary: '', jobDescription: '' }] : [{ company: '', position: '', fromDate: '', toDate: '', salary: '', jobDescription: '' }]
+      experience: prev.experience ? [...prev.experience, { company: '', position: '', fromDate: '', toDate: '', salary: '', detail: '' }] : [{ company: '', position: '', fromDate: '', toDate: '', salary: '', detail: '' }]
     }));
   };
   const handleRemoveEducation = (idx) => {
@@ -454,13 +713,13 @@ const calculateBirthDate = (age) => {
             {isEditing ? (
               <input
                 type="number"
-                name="Age"
-                value={editData.Age || ''}
+                name="age"
+                value={editData.age || ''}
                 onChange={handleInputChange}
                 className="edit-input"
               />
             ) : (
-              <span className="info-value">{employeeData?.Age || '-'}</span>
+              <span className="info-value">{employeeData.age || '-'}</span>
             )}
           </div>
         </div>
@@ -653,11 +912,11 @@ const calculateBirthDate = (age) => {
               onChange={handleInputChange}
               className="edit-input"
             >
-              <option value="">Select Type</option>
-              <option value="Permanent">Permanent</option>
-              <option value="Contract">Contract</option>
-              <option value="Intern">Intern</option>
-              <option value="Freelance">Freelance</option>
+              <option value="">Select type</option>
+              <option value="1">Permanent</option>
+              <option value="2">Contract</option>
+              <option value="3">Intern</option>
+              <option value="4">Freelance</option>
             </select>
           ) : (
             <span className="info-value">{employeeData?.Type || '-'}</span>
@@ -728,462 +987,297 @@ const calculateBirthDate = (age) => {
     </div>
   );
 
-  const renderDocuments = () => {
-    return (
-      <div className="documents-container">
-        <div className="documents-header">
-          <button className="add-file-btn" onClick={() => setIsUploadModalOpen(true)}>
-            <FiUpload />
-            ADD FILE
-          </button>
-        </div>
-        {/* Document list section */}
-        <div className="document-list">
-          <div className="document-row">
-            <div className="document-item">
-              <span>Job application form.pdf</span>
-              <div className="document-actions">
-                <button className="button-view">
-                  <svg
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    viewBox="0 0 24 24"
-                    height="24"
-                    width="24"
-                    className="button-view__icon"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                  </svg>
-                  <span>View</span>
-                </button>
-                <button className="button-download">
-                  <svg
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    viewBox="0 0 24 24"
-                    height="24"
-                    width="24"
-                    className="button-download__icon"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path fill="none" d="M0 0h24v24H0z" stroke="none"></path>
-                    <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"></path>
-                    <path d="M7 11l5 5l5 -5"></path>
-                    <path d="M12 4l0 12"></path>
-                  </svg>
-                  <span>Download</span>
-                </button>
-                <button className="button-delete">
-                  <svg
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    viewBox="0 0 24 24"
-                    height="24"
-                    width="24"
-                    className="button-delete__icon"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path d="M3 6h18"></path>
-                    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"></path>
-                    <path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
-                    <path d="M10 11v6"></path>
-                    <path d="M14 11v6"></path>
-                  </svg>
-                  <span>Delete</span>
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="document-row">
-            <div className="document-item">
-              <span>Employment contract.jpg</span>
-              <div className="document-actions">
-                <button className="button-view">
-                  <svg
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    viewBox="0 0 24 24"
-                    height="24"
-                    width="24"
-                    className="button-view__icon"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                  </svg>
-                  <span>View</span>
-                </button>
-                <button className="button-download">
-                  <svg
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    viewBox="0 0 24 24"
-                    height="24"
-                    width="24"
-                    className="button-download__icon"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path fill="none" d="M0 0h24v24H0z" stroke="none"></path>
-                    <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"></path>
-                    <path d="M7 11l5 5l5 -5"></path>
-                    <path d="M12 4l0 12"></path>
-                  </svg>
-                  <span>Download</span>
-                </button>
-                <button className="button-delete">
-                  <svg
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    viewBox="0 0 24 24"
-                    height="24"
-                    width="24"
-                    className="button-delete__icon"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path d="M3 6h18"></path>
-                    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"></path>
-                    <path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
-                    <path d="M10 11v6"></path>
-                    <path d="M14 11v6"></path>
-                  </svg>
-                  <span>Delete</span>
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="document-row">
-            <div className="document-item">
-              <span>Certificate.pdf</span>
-              <div className="document-actions">
-                <button className="button-view">
-                  <svg
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    viewBox="0 0 24 24"
-                    height="24"
-                    width="24"
-                    className="button-view__icon"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                  </svg>
-                  <span>View</span>
-                </button>
-                <button className="button-download">
-                  <svg
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    viewBox="0 0 24 24"
-                    height="24"
-                    width="24"
-                    className="button-download__icon"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path fill="none" d="M0 0h24v24H0z" stroke="none"></path>
-                    <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"></path>
-                    <path d="M7 11l5 5l5 -5"></path>
-                    <path d="M12 4l0 12"></path>
-                  </svg>
-                  <span>Download</span>
-                </button>
-                <button className="button-delete">
-                  <svg
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    viewBox="0 0 24 24"
-                    height="24"
-                    width="24"
-                    className="button-delete__icon"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path d="M3 6h18"></path>
-                    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"></path>
-                    <path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
-                    <path d="M10 11v6"></path>
-                    <path d="M14 11v6"></path>
-                  </svg>
-                  <span>Delete</span>
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="document-row">
-            <div className="document-item">
-              <span>Copy of ID Card.pdf</span>
-              <div className="document-actions">
-                <button className="button-view">
-                  <svg
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    viewBox="0 0 24 24"
-                    height="24"
-                    width="24"
-                    className="button-view__icon"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                  </svg>
-                  <span>View</span>
-                </button>
-                <button className="button-download">
-                  <svg
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    viewBox="0 0 24 24"
-                    height="24"
-                    width="24"
-                    className="button-download__icon"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path fill="none" d="M0 0h24v24H0z" stroke="none"></path>
-                    <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"></path>
-                    <path d="M7 11l5 5l5 -5"></path>
-                    <path d="M12 4l0 12"></path>
-                  </svg>
-                  <span>Download</span>
-                </button>
-                <button className="button-delete">
-                  <svg
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    viewBox="0 0 24 24"
-                    height="24"
-                    width="24"
-                    className="button-delete__icon"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path d="M3 6h18"></path>
-                    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"></path>
-                    <path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
-                    <path d="M10 11v6"></path>
-                    <path d="M14 11v6"></path>
-                  </svg>
-                  <span>Delete</span>
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="document-row">
-            <div className="document-item">
-              <span>House Registration.png</span>
-              <div className="document-actions">
-                <button className="button-view">
-                  <svg
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    viewBox="0 0 24 24"
-                    height="24"
-                    width="24"
-                    className="button-view__icon"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                  </svg>
-                  <span>View</span>
-                </button>
-                <button className="button-download">
-                  <svg
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    viewBox="0 0 24 24"
-                    height="24"
-                    width="24"
-                    className="button-download__icon"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path fill="none" d="M0 0h24v24H0z" stroke="none"></path>
-                    <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"></path>
-                    <path d="M7 11l5 5l5 -5"></path>
-                    <path d="M12 4l0 12"></path>
-                  </svg>
-                  <span>Download</span>
-                </button>
-                <button className="button-delete">
-                  <svg
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    viewBox="0 0 24 24"
-                    height="24"
-                    width="24"
-                    className="button-delete__icon"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path d="M3 6h18"></path>
-                    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"></path>
-                    <path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
-                    <path d="M10 11v6"></path>
-                    <path d="M14 11v6"></path>
-                  </svg>
-                  <span>Delete</span>
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="document-row">
-            <div className="document-item">
-              <span>Bank Account Book.pdf</span>
-              <div className="document-actions">
-                <button className="button-view">
-                  <svg
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    viewBox="0 0 24 24"
-                    height="24"
-                    width="24"
-                    className="button-view__icon"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                  </svg>
-                  <span>View</span>
-                </button>
-                <button className="button-download">
-                  <svg
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    viewBox="0 0 24 24"
-                    height="24"
-                    width="24"
-                    className="button-download__icon"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path fill="none" d="M0 0h24v24H0z" stroke="none"></path>
-                    <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"></path>
-                    <path d="M7 11l5 5l5 -5"></path>
-                    <path d="M12 4l0 12"></path>
-                  </svg>
-                  <span>Download</span>
-                </button>
-                <button className="button-delete">
-                  <svg
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    viewBox="0 0 24 24"
-                    height="24"
-                    width="24"
-                    className="button-delete__icon"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path d="M3 6h18"></path>
-                    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"></path>
-                    <path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
-                    <path d="M10 11v6"></path>
-                    <path d="M14 11v6"></path>
-                  </svg>
-                  <span>Delete</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        {/* File Upload Modal */}
-        {isUploadModalOpen && (
-          <div className="modal-overlay">
-            <div className="upload-modal">
-              <div className="upload-modal-header">
-                <h3>Upload Document</h3>
-                <button className="close-btn" onClick={() => setIsUploadModalOpen(false)}>
-                  <FiX />
-                </button>
-              </div>
-              <div className="upload-modal-content">
-                <div className="upload-area">
-                  <input
-                    type="file"
-                    id="file-upload"
-                    onChange={handleFileUpload}
-                    className="file-input"
-                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                  />
-                  <label htmlFor="file-upload" className="upload-label">
-                    <FiUpload className="upload-icon" />
-                    <p>Drag & drop your file here or <span>browse</span></p>
-                    <p className="upload-hint">Supported formats: PDF, DOC, DOCX, JPG, PNG</p>
-                  </label>
+
+// Alternative approach using a separate component for each document item
+const renderDocuments = () => { // Remove emp parameter
+  // Handle button actions
+  const handleView = (attachment) => {
+    console.log('Viewing:', attachment.file_name);
+    if (attachment.file_path) {
+      window.open(attachment.file_path, '_blank');
+    }
+  };
+
+  const handleDownload = (attachment) => {
+    console.log('Downloading:', attachment.file_name);
+    if (attachment.file_path) {
+      const link = document.createElement('a');
+      link.href = attachment.file_path;
+      link.download = attachment.file_name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+  const handleDelete = (attachment) => {
+    console.log('Deleting:', attachment.file_name);
+    if (window.confirm(`Are you sure you want to delete ${attachment.file_name}?`)) {
+      // Call your delete API here
+      // deleteAttachment(attachment.attachment_id);
+    }
+  };
+
+  // Use employeeData.attachments directly instead of emp.attachments
+  const attachments = employeeData?.attachments || [];
+
+  console.log("Mapped attachments:", attachments);
+
+  return (
+    <div className="documents-container">
+      <div className="documents-header">
+        <button className="add-file-btn" onClick={() => setIsUploadModalOpen(true)}>
+          <FiUpload />
+          ADD FILE
+        </button>
+      </div>
+      
+      {/* Document list section */}
+      <div className="document-list">
+        {attachments.length === 0 ? (
+          <div className="no-documents">
+            <p>No documents uploaded yet.</p>
+          </div>
+        ) : (
+          attachments.map((attachment) => (
+            <div key={attachment.attachment_id} className="document-row">
+              <div className="document-item">
+                <span>{attachment.file_name}</span>
+                <div className="document-actions">
+                  <button 
+                    className="button-view"
+                    onClick={() => handleView(attachment)}
+                    title="View document"
+                  >
+                    <svg
+                      strokeLinejoin="round"
+                      strokeLinecap="round"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      viewBox="0 0 24 24"
+                      height="24"
+                      width="24"
+                      className="button-view__icon"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <span>View</span>
+                  </button>
+                  
+                  <button 
+                    className="button-download"
+                    onClick={() => handleDownload(attachment)}
+                    title="Download document"
+                  >
+                    <svg
+                      strokeLinejoin="round"
+                      strokeLinecap="round"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      viewBox="0 0 24 24"
+                      height="24"
+                      width="24"
+                      className="button-download__icon"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path fill="none" d="M0 0h24v24H0z" stroke="none"></path>
+                      <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"></path>
+                      <path d="M7 11l5 5l5 -5"></path>
+                      <path d="M12 4l0 12"></path>
+                    </svg>
+                    <span>Download</span>
+                  </button>
+                  
+                  <button 
+                    className="button-delete"
+                    onClick={() => handleDelete(attachment)}
+                    title="Delete document"
+                  >
+                    <svg
+                      strokeLinejoin="round"
+                      strokeLinecap="round"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      viewBox="0 0 24 24"
+                      height="24"
+                      width="24"
+                      className="button-delete__icon"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path d="M3 6h18"></path>
+                      <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"></path>
+                      <path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
+                      <path d="M10 11v6"></path>
+                      <path d="M14 11v6"></path>
+                    </svg>
+                    <span>Delete</span>
+                  </button>
                 </div>
-                {uploadFile && (
-                  <div className="upload-progress">
-                    <div className="file-info">
-                      <FiUpload />
-                      <span>{uploadFile.name}</span>
-                    </div>
-                    <div className="progress-bar">
-                      <div 
-                        className="progress" 
-                        style={{ width: `${uploadProgress}%` }}
-                      ></div>
-                    </div>
-                    <span className="progress-text">{uploadProgress}%</span>
-                  </div>
-                )}
               </div>
             </div>
-          </div>
+          ))
         )}
       </div>
-    );
+    </div>
+  );
+};
+
+// Fixed DocumentItem component - removed the stray console.log
+const DocumentItem = ({ attachment, onView, onDownload, onDelete }) => {
+  return (
+    <div className="document-row">
+      <div className="document-item">
+        <span>{attachment.file_name}</span>
+        <div className="document-actions">
+          <button 
+            className="button-view"
+            onClick={() => onView(attachment)}
+            title="View document"
+          >
+            <svg
+              strokeLinejoin="round"
+              strokeLinecap="round"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              viewBox="0 0 24 24"
+              height="24"
+              width="24"
+              className="button-view__icon"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            <span>View</span>
+          </button>
+          
+          <button 
+            className="button-download"
+            onClick={() => onDownload(attachment)}
+            title="Download document"
+          >
+            <svg
+              strokeLinejoin="round"
+              strokeLinecap="round"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              viewBox="0 0 24 24"
+              height="24"
+              width="24"
+              className="button-download__icon"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path fill="none" d="M0 0h24v24H0z" stroke="none"></path>
+              <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"></path>
+              <path d="M7 11l5 5l5 -5"></path>
+              <path d="M12 4l0 12"></path>
+            </svg>
+            <span>Download</span>
+          </button>
+          
+          <button 
+            className="button-delete"
+            onClick={() => onDelete(attachment)}
+            title="Delete document"
+          >
+            <svg
+              strokeLinejoin="round"
+              strokeLinecap="round"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              viewBox="0 0 24 24"
+              height="24"
+              width="24"
+              className="button-delete__icon"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M3 6h18"></path>
+              <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"></path>
+              <path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
+              <path d="M10 11v6"></path>
+              <path d="M14 11v6"></path>
+            </svg>
+            <span>Delete</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+// Usage with the alternative approach
+const renderDocumentsAlternative = (emp) => {
+  const attachments = emp.attachments?.map(attachment => ({
+    attachment_id: attachment.attachment_id,
+    file_name: attachment.file_name,
+    file_path: attachment.file_path ? `http://localhost:5000${attachment.file_path}` : "",
+    create_date: formatDateForDisplay(attachment.create_date),
+    modify_date: formatDateForDisplay(attachment.modify_date)
+  })) || [];
+
+  const handleView = (attachment) => {
+    console.log('Viewing:', attachment.file_name);
+    if (attachment.file_path) {
+      window.open(attachment.file_path, '_blank');
+    }
   };
+
+  const handleDownload = (attachment) => {
+    console.log('Downloading:', attachment.file_name);
+    if (attachment.file_path) {
+      const link = document.createElement('a');
+      link.href = attachment.file_path;
+      link.download = attachment.file_name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+  const handleDelete = (attachment) => {
+    console.log('Deleting:', attachment.file_name);
+    if (window.confirm(`Are you sure you want to delete ${attachment.file_name}?`)) {
+      // Call your delete API here
+    }
+  };
+
+  return (
+    <div className="documents-container">
+      <div className="documents-header">
+        <button className="add-file-btn" onClick={() => setIsUploadModalOpen(true)}>
+          <FiUpload />
+          ADD FILE
+        </button>
+      </div>
+      
+      <div className="document-list">
+        {attachments.length === 0 ? (
+          <div className="no-documents">
+            <p>No documents uploaded yet.</p>
+          </div>
+        ) : (
+          attachments.map((attachment) => (
+            <DocumentItem
+              key={attachment.attachment_id}
+              attachment={attachment}
+              onView={handleView}
+              onDownload={handleDownload}
+              onDelete={handleDelete}
+            />
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
 
   const renderBankInfo = () => {
     return (
@@ -1521,12 +1615,33 @@ const calculateBirthDate = (age) => {
                       <td>{isEditing ? (
                         <input type="text" name={`experience.${idx}.position`} value={row.position || ''} onChange={handleInputChange} />
                       ) : row.position || '-'}</td>
-                      <td>{isEditing ? (
-                        <input type="month" name={`experience.${idx}.fromDate`} value={row.fromDate || ''} onChange={handleInputChange} />
-                      ) : row.fromDate || '-'}</td>
-                      <td>{isEditing ? (
-                        <input type="month" name={`experience.${idx}.toDate`} value={row.toDate || ''} onChange={handleInputChange} />
-                      ) : row.toDate || '-'}</td>
+     <td>
+  {isEditing ? (
+    <input 
+      type="month" 
+      name={`experience.${idx}.from_date`} 
+      value={formatDateForMonthInput(row.from_date)} // ✅ แปลงรูปแบบก่อนใส่ input
+      onChange={handleInputChange}
+      className="form-input"
+    />
+  ) : (
+    formatMonthYear(row.from_date)
+  )}
+</td>
+
+<td>
+  {isEditing ? (
+    <input 
+      type="month" 
+      name={`experience.${idx}.to_date`} 
+      value={formatDateForMonthInput(row.to_date)} // ✅ แปลงรูปแบบก่อนใส่ input
+      onChange={handleInputChange}
+      className="form-input"
+    />
+  ) : (
+    row.to_date ? formatMonthYear(row.to_date) : 'ปัจจุบัน'
+  )}
+</td>
                       <td>{isEditing ? (
                         <input type="number" name={`experience.${idx}.salary`} value={row.salary || ''} onChange={handleInputChange} min="0" />
                       ) : (row.salary ? `฿${row.salary}` : '-')}</td>
@@ -1542,8 +1657,8 @@ const calculateBirthDate = (age) => {
                       <td colSpan={isEditing ? "6" : "5"} style={{ padding: "8px 16px", background: "#f8fafc" }}>
                         {isEditing ? (
                           <textarea
-                            name={`experience.${idx}.jobDescription`}
-                            value={row.jobDescription || ''}
+                            name={`experience.${idx}.detail`}
+                            value={row.detail || ''}
                             onChange={handleInputChange}
                             rows="3"
                             placeholder="Enter job responsibilities and achievements..."
@@ -1565,7 +1680,7 @@ const calculateBirthDate = (age) => {
                             lineHeight: '1.4',
                             color: '#4a5568'
                           }}>
-                            {row.jobDescription || '-'}
+                            {row.detail || '-'}
                           </div>
                         )}
                       </td>
@@ -1614,8 +1729,8 @@ const calculateBirthDate = (age) => {
                     </td>
                     <td>
                       {isEditing ? (
-                        <input type="text" name={`education.${idx}.major`} value={edu.major || ''} onChange={handleInputChange} placeholder="Field of Study" />
-                      ) : edu.major || '-'}
+                        <input type="text" name={`education.${idx}.major`} value={edu.field|| ''} onChange={handleInputChange} placeholder="Field of Study" />
+                      ) : edu.field || '-'}
                     </td>
                     <td>
                       {isEditing ? (
@@ -1624,8 +1739,8 @@ const calculateBirthDate = (age) => {
                     </td>
                     <td>
                       {isEditing ? (
-                        <input type="number" name={`education.${idx}.graduationYear`} value={edu.graduationYear || ''} onChange={handleInputChange} placeholder="Year" min="1950" max="2025" />
-                      ) : edu.graduationYear || '-'}
+                        <input type="number" name={`education.${idx}.year`} value={edu.year || ''} onChange={handleInputChange} placeholder="Year" min="1950" max="2025" />
+                      ) : edu.year || '-'}
                     </td>
                     {isEditing && (
                       <td>
@@ -2300,7 +2415,7 @@ const calculateBirthDate = (age) => {
         return (
           <div className="info-section">
             <div className="section-title">Documents</div>
-            {renderDocuments()}
+         {renderDocuments(employeeData)} 
           </div>
         );
       case 'professional':
